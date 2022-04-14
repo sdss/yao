@@ -1043,7 +1043,7 @@ description = "A library and actor to communicate with an STA Archon controller.
 category = "main"
 optional = false
 python-versions = "^3.8"
-develop = false
+develop = true
 
 [package.dependencies]
 astropy = "^5.0"
@@ -1057,7 +1057,7 @@ lvm = ["sdss-drift (>=0.4.1)", "httpx (>=0.18.1)", "Authlib (>=1.0.0rc1)"]
 
 [package.source]
 type = "directory"
-url = "../archon"
+url = "../archon_boss"
 
 [[package]]
 name = "sdss-clu"
@@ -1480,7 +1480,7 @@ testing = ["pytest (>=6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytest-
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.9,<4.0"
-content-hash = "4f0d34a783ec596d6122a057ad404a73a73cc97c8cbed6adbc52deeb35113633"
+content-hash = "f45a7a41adcd91c9e913f4e62531ce8192e4f4236f766f2e762430ae46c1e052"
 
 [metadata.files]
 aio-pika = [
@@ -2051,7 +2051,6 @@ pytest = [
 ]
 pytest-asyncio = [
     {file = "pytest-asyncio-0.18.3.tar.gz", hash = "sha256:7659bdb0a9eb9c6e3ef992eef11a2b3e69697800ad02fb06374a210d85b29f91"},
-    {file = "pytest_asyncio-0.18.3-1-py3-none-any.whl", hash = "sha256:16cf40bdf2b4fb7fc8e4b82bd05ce3fbcd454cbf7b92afc445fe299dabb88213"},
     {file = "pytest_asyncio-0.18.3-py3-none-any.whl", hash = "sha256:8fafa6c52161addfd41ee7ab35f11836c5a16ec208f93ee388f752bea3493a84"},
 ]
 pytest-cov = [

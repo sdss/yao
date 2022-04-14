@@ -29,11 +29,11 @@ script = "build.py"
 generate-setup-file = false
 
 [tool.poetry.scripts]
-yao = "yao.__main__:main"
+yao = "yao.__main__:yao"
 
 [tool.poetry.dependencies]
 python = ">=3.9,<4.0"
-sdss-archon = {path = "../archon"}
+sdss-archon = {path = "../archon_boss", develop = true}
 sdss-tree = ">=2.15.2"
 sdss-access = ">=0.2.3"
 sdsstools = ">=0.4.0"

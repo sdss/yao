@@ -1,1 +1,44 @@
 ---
+controllers:
+  sp2:
+    host: 10.7.45.62
+    port: 4242
+    parameters:
+      pixels: 2200
+      lines: 2200
+      overscan_pixels: 20
+      taps_per_detector: 4
+      framemode: split
+    detectors:
+      r2:
+        gain: 1.0
+        readnoise: 1.0
+      b2:
+        gain: 1.0
+        readnoise: 1.0
+
+actor:
+  name: yao
+  host: localhost
+  port: 19999
+  schema: etc/schema.json
+  log_dir: /data/logs/yao
+
+files:
+  data_dir: '/data/spectro/boss'
+  split: true
+  template: 'sdR-S-{ccd}-{exposure_no:08d}.fits.gz'
+
+archon:
+  acf_file: etc/BOSS_extra.acf
+
+timeouts:
+  controller_connect: 5
+  write_config_timeout: 2
+  write_config_delay: 0.0001
+  expose_timeout: 2
+  readout_expected: 40
+  readout_max: 60
+  fetching_expected: 5
+  fetching_max: 10
+  flushing: 1.2
