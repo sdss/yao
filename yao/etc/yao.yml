@@ -4,9 +4,8 @@ controllers:
     host: 10.7.45.62
     port: 4242
     parameters:
-      pixels: 2200
-      lines: 2200
-      overscan_pixels: 20
+      pixels: 2176
+      lines: 2112
       taps_per_detector: 4
       framemode: split
     detectors:
