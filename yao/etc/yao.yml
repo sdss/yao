@@ -15,6 +15,13 @@ controllers:
       b2:
         gain: 1.0
         readnoise: 1.0
+    overscan_regions:
+      b2:
+        lines: 56
+        pixels: 77
+      r2:
+        lines: 48
+        pixels: 111
 
 actor:
   name: yao
