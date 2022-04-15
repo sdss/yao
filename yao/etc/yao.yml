@@ -29,7 +29,7 @@ files:
   template: 'sdR-S-{ccd}-{exposure_no:08d}.fits.gz'
 
 archon:
-  acf_file: etc/BOSS_extra.acf
+  acf_file: BOSS_extra.acf
 
 timeouts:
   controller_connect: 5
