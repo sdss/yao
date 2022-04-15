@@ -20,6 +20,8 @@ actor:
   name: yao
   host: localhost
   port: 19999
+  tron_host: localhost
+  tron_port: 6093
   schema: etc/schema.json
   log_dir: /data/logs/yao
 
