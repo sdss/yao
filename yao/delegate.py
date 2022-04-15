@@ -8,6 +8,7 @@
 
 import numpy
 from astropy.io import fits
+from astropy.time import Time
 
 from archon.actor.delegate import ExposureDelegate
 from archon.controller import ArchonController
@@ -30,6 +31,7 @@ class YaoDelegate(ExposureDelegate):
 
         for hdu in hdus:
             data = hdu.data
+            header = hdu.header
             assert isinstance(data, numpy.ndarray)
 
             ccd = hdu.header["CCD"]
@@ -60,5 +62,22 @@ class YaoDelegate(ExposureDelegate):
             data[LINES:-OL, PIXELS:-OP] = raw[LINES + OL :, PIXELS + OP :]  # TR
 
             hdu.data = data
+
+            # Rename some keywords and add others to match APO BOSS datamodel.
+            header.insert("CCD", ("CAMERAS", header["CCD"]))
+
+            header.rename_keyword("IMAGETYP", "FLAVOR")
+            header.rename_keyword("OBSTIME", "DATE-OBS")
+
+            isot = Time(header["DATE-OBS"], format="isot", scale="tai")
+            tai_card = (
+                "TAI-BEG",
+                isot.mjd * 24 * 3600,
+                "MJD(TAI) seconds at start of integration",
+            )
+            header.insert("DATE-OBS", tai_card)
+
+            reqtime_card = ("REQTIME", header["EXPTIME"], "Requested exposure time")
+            header.insert("EXPTIME", reqtime_card)
 
         return controller, hdus

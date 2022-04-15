@@ -10,11 +10,11 @@ controllers:
       framemode: split
     detectors:
       r2:
-        gain: 1.0
-        readnoise: 1.0
+        gain: 2.2
+        readnoise: 10
       b2:
-        gain: 1.0
-        readnoise: 1.0
+        gain: 1.4
+        readnoise: 2.7
     overscan_regions:
       b2:
         lines: 56
@@ -22,6 +22,19 @@ controllers:
       r2:
         lines: 48
         pixels: 111
+
+header:
+  TELESCOP: 'du Pont 2.5m'
+  CCDTEMP:
+    command: status
+    detectors:
+      r2: ['mod2/tempa', 'Temperature of the sensor (HEATERX 2)', 2]
+      b2: ['mod11/tempa', 'Temperature of the sensor (HEATERX 11)', 2]
+  LN2TEMP:
+    command: status
+    detectors:
+      r2: ['mod2/tempb', 'LN2 can temperature (HEATERX 2)', 2]
+      b2: ['mod11/tempb', 'LN2 can temperature (HEATERX 11)', 2]
 
 actor:
   name: yao
