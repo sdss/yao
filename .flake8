@@ -4,6 +4,7 @@ ignore =
     H101
     N
     W504
+    E203
 
 per-file-ignores =
     */__init__.py:E,W
