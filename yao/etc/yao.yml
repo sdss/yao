@@ -18,10 +18,10 @@ controllers:
     overscan_regions:
       b2:
         lines: 56
-        pixels: 77
+        pixels: 78
       r2:
         lines: 48
-        pixels: 111
+        pixels: 112
 
 header:
   TELESCOP: 'du Pont 2.5m'
