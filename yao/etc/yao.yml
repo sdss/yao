@@ -3,16 +3,13 @@ controllers:
   sp2:
     host: 10.7.45.62
     port: 4242
-    parameters:
-      pixels: 2176
-      lines: 2112
-      taps_per_detector: 4
-      framemode: split
     detectors:
       r2:
+        taps: 4
         gain: 2.2
         readnoise: 10
       b2:
+        taps: 4
         gain: 1.4
         readnoise: 2.7
     overscan_regions:
@@ -22,6 +19,12 @@ controllers:
       r2:
         lines: 48
         pixels: 112
+
+window_modes:
+  hartmann:
+    lines: 467
+    preskiplines: 896
+    postskiplines: 748
 
 header:
   TELESCOP: 'du Pont 2.5m'

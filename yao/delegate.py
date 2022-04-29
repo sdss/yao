@@ -26,8 +26,10 @@ class YaoDelegate(ExposureDelegate):
 
         config = self.actor.config
 
-        LINES = config["controllers"]["sp2"]["parameters"]["lines"]
-        PIXELS = config["controllers"]["sp2"]["parameters"]["pixels"]
+        LINES = controller.current_window["lines"]
+        PIXELS = controller.current_window["pixels"]
+
+        WIN_MODE = self.expose_data.window_mode if self.expose_data else None
 
         for hdu in hdus:
             data = hdu.data
@@ -39,7 +41,13 @@ class YaoDelegate(ExposureDelegate):
                 self.command.warning(text=f"Unknown CCD {ccd}.")
                 continue
 
-            OL = config["controllers"]["sp2"]["overscan_regions"][ccd]["lines"]
+            if WIN_MODE != "hartmann":
+                OL = config["controllers"]["sp2"]["overscan_regions"][ccd]["lines"]
+                OL_END = -OL
+            else:
+                OL = 0
+                OL_END = None
+
             OP = config["controllers"]["sp2"]["overscan_regions"][ccd]["pixels"]
 
             # Copy original data.
@@ -50,18 +58,31 @@ class YaoDelegate(ExposureDelegate):
             data[:, -OP:] = raw[:, PIXELS : PIXELS + OP]
 
             # Rearrange line overscan.
-            data[:OL, OP:PIXELS] = raw[LINES - OL : LINES, : PIXELS - OP]  # BL
-            data[-OL:, OP:PIXELS] = raw[LINES : LINES + OL, : PIXELS - OP]  # TL
-            data[:OL, PIXELS:-OP] = raw[LINES - OL : LINES, PIXELS + OP :]  # BL
-            data[-OL:, PIXELS:-OP] = raw[LINES : LINES + OL, PIXELS + OP :]  # BR
+            if OL > 0:
+                data[:OL, OP:PIXELS] = raw[LINES - OL : LINES, : PIXELS - OP]  # BL
+                data[-OL:, OP:PIXELS] = raw[LINES : LINES + OL, : PIXELS - OP]  # TL
+                data[:OL, PIXELS:-OP] = raw[LINES - OL : LINES, PIXELS + OP :]  # BL
+                data[-OL:, PIXELS:-OP] = raw[LINES : LINES + OL, PIXELS + OP :]  # BR
 
             # Rearrange data.
             data[OL:LINES, OP:PIXELS] = raw[: LINES - OL, : PIXELS - OP]  # BL
-            data[LINES:-OL, OP:PIXELS] = raw[LINES + OL :, : PIXELS - OP]  # TL
+            data[LINES:OL_END, OP:PIXELS] = raw[LINES + OL :, : PIXELS - OP]  # TL
             data[OL:LINES, PIXELS:-OP] = raw[: LINES - OL, PIXELS + OP :]  # BR
-            data[LINES:-OL, PIXELS:-OP] = raw[LINES + OL :, PIXELS + OP :]  # TR
+            data[LINES:OL_END, PIXELS:-OP] = raw[LINES + OL :, PIXELS + OP :]  # TR
 
-            hdu.data = data
+            if WIN_MODE == "hartmann":
+                DEF_LINES = controller.default_window["lines"]
+                DEF_PIXELS = controller.default_window["pixels"]
+                new_data = numpy.zeros((DEF_LINES * 2, DEF_PIXELS * 2), dtype="u2")
+
+                PRELINES = controller.current_window["preskiplines"]
+
+                new_data[PRELINES : PRELINES + LINES, :] = data[:LINES, :]
+                new_data[-PRELINES - LINES : -PRELINES, :] = data[LINES:, :]
+
+                hdu.data = new_data
+            else:
+                hdu.data = data
 
             # Rename some keywords and add others to match APO BOSS datamodel.
             header.insert("CCD", ("CAMERAS", header["CCD"]))
