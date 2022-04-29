@@ -14,6 +14,7 @@ from archon import log as archon_log
 from archon.actor.actor import ArchonBaseActor
 
 from yao import config
+from yao.commands import parser
 from yao.delegate import YaoDelegate
 
 
@@ -23,6 +24,7 @@ class YaoActor(ArchonBaseActor, LegacyActor):
     is_legacy = True
 
     DELEGATE_CLASS = YaoDelegate
+    parser = parser
 
     def __init__(self, *args, **kwargs):
 
