@@ -24,10 +24,6 @@ packages = [
 ]
 include = ["yao/etc/*"]
 
-[tool.poetry.build]
-script = "build.py"
-generate-setup-file = false
-
 [tool.poetry.scripts]
 yao = "yao.__main__:yao"
 
