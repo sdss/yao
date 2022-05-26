@@ -16,6 +16,7 @@ from archon.actor.actor import ArchonBaseActor
 from yao import config
 from yao.commands import parser
 from yao.delegate import YaoDelegate
+from yao.mech_controller import MechController
 
 
 class YaoActor(ArchonBaseActor, LegacyActor):
@@ -38,10 +39,27 @@ class YaoActor(ArchonBaseActor, LegacyActor):
 
         super().__init__(*args, **kwargs)
 
+        # TODO: this assumes one single mech controller, not one per spectrograph,
+        # but in practice for now that's fine.
+        self.spec_mech = MechController(
+            self.config["specMech"]["address"],
+            self.config["specMech"]["port"],
+        )
+
         # Add actor log handlers to the archon library to also get that logging.
         archon_log.addHandler(self.log.sh)
         if self.log.fh:
             archon_log.addHandler(self.log.fh)
+
+    async def start(self):
+        """Starts the actor and connects the specMech client."""
+
+        try:
+            await self.spec_mech.start()
+        except Exception as err:
+            raise ConnectionError(f"Failed connecting to mech controller: {err}")
+
+        return await super().start()
 
     @staticmethod
     def _process_message(message: dict):
