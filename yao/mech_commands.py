@@ -426,3 +426,12 @@ async def reconnect(command: YaoCommand, controller):
         return command.fail(f"Failed reconnecting to the specMech: {err}")
 
     return command.finish("The connection to the specMech has been reestablished.")
+
+
+@mech.command()
+async def disconnect(command: YaoCommand, controller):
+    """Closes the connection to the specMech."""
+
+    await command.actor.spec_mech.close()
+
+    return command.finish("The connection to the specMech has been closed.")
