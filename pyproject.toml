@@ -2,7 +2,7 @@
 name = "sdss-yao"
 version = "0.1.0-alpha.0"
 description = "BOSS spectrograph actor that uses an STA Archon controller"
-authors = ["José Sánchez-Gallego <gallegoj@uw.edu>"]
+authors = ["José Sánchez-Gallego <gallegoj@uw.edu>", "Aidan Gray <Aidan.Gray@idg.jhu.edu>"]
 license = "BSD-3-Clause"
 readme = "README.md"
 homepage = "https://github.com/sdss/yao"
@@ -29,7 +29,7 @@ yao = "yao.__main__:yao"
 
 [tool.poetry.dependencies]
 python = ">=3.9,<4.0"
-sdss-archon = {path = "../archon", develop = true}
+sdss-archon = ">=0.6.0"
 sdsstools = ">=0.4.0"
 click = "^8.1.2"
 

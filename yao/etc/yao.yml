@@ -39,6 +39,10 @@ header:
       r2: ['mod2/tempb', 'LN2 can temperature (HEATERX 2)', 2]
       b2: ['mod11/tempb', 'LN2 can temperature (HEATERX 11)', 2]
 
+specMech:
+  address: 10.7.45.35
+  port: 23
+
 actor:
   name: yao
   host: localhost
@@ -66,3 +70,4 @@ timeouts:
   fetching_expected: 5
   fetching_max: 10
   flushing: 1.2
+  pneumatics: 1.5

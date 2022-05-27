@@ -6,16 +6,20 @@
 # @Filename: commands.py
 # @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
 
-import click
-from clu.command import Command
+from __future__ import annotations
 
-from archon.actor import ArchonActor, parser
+from typing import TYPE_CHECKING
+
+import click
+
+from archon.actor import parser
+
+
+if TYPE_CHECKING:
+    from .actor import YaoCommand
 
 
 __all__ = []
-
-
-YaoCommand = Command[ArchonActor]
 
 
 @parser.command()
