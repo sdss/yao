@@ -2,6 +2,36 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "definitions": {},
   "type": "object",
-  "properties": {},
-  "additionalProperties": true
+  "properties": {
+    "motor": {
+      "type": "array",
+      "items": [
+        { "type": "string" },
+        { "type": "string" },
+        { "type": "string" }
+      ]
+    },
+    "temperature0": { "type": "number" },
+    "humidity0": { "type": "number" },
+    "temperature1": { "type": "number" },
+    "humidity1": { "type": "number" },
+    "temperature2": { "type": "number" },
+    "humidity2": { "type": "number" },
+    "specMechTemp": { "type": "number" },
+    "accelerometer": {
+      "type": "array",
+      "items": { "type": "number" }
+    },
+    "shutter": { "type": "string" },
+    "hartmannLeft": { "type": "string" },
+    "hartmannRight": { "type": "string" },
+    "airPressure": { "type": "string" },
+    "bootTime": { "type": "string" },
+    "clockTime": { "type": "string" },
+    "setTime": { "type": "string" },
+    "specMechVersion": { "type": "string" },
+    "vacuumPumpRedDewar": { "type": "number" },
+    "vacuumPumpBlueDewar": { "type": "number" }
+  },
+  "additionalProperties": false
 }

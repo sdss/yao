@@ -32,7 +32,6 @@ python = ">=3.9,<4.0"
 sdss-archon = {path = "../archon", develop = true}
 sdsstools = ">=0.4.0"
 click = "^8.1.2"
-telnetlib3 = "^1.0.4"
 
 [tool.poetry.dev-dependencies]
 ipython = ">=8.0.0"

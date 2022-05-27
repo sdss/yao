@@ -1303,14 +1303,6 @@ python-versions = ">=3.6"
 pbr = ">=2.0.0,<2.1.0 || >2.1.0"
 
 [[package]]
-name = "telnetlib3"
-version = "1.0.4"
-description = "Python 3 asyncio Telnet server and client Protocol library"
-category = "main"
-optional = false
-python-versions = "*"
-
-[[package]]
 name = "termcolor"
 version = "1.1.0"
 description = "ANSII Color formatting for output in terminal."
@@ -1435,7 +1427,7 @@ testing = ["pytest (>=6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytest-
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.9,<4.0"
-content-hash = "d5df654f5ae893e53b3e6b5115a97c00846e825827351add30a8728bc4120361"
+content-hash = "725d805f97aa2bf55e319d48fd24354a13adc454d5a68d5076c66588ea719f59"
 
 [metadata.files]
 aio-pika = [
@@ -2147,10 +2139,6 @@ stack-data = [
 stevedore = [
     {file = "stevedore-3.5.0-py3-none-any.whl", hash = "sha256:a547de73308fd7e90075bb4d301405bebf705292fa90a90fc3bcf9133f58616c"},
     {file = "stevedore-3.5.0.tar.gz", hash = "sha256:f40253887d8712eaa2bb0ea3830374416736dc8ec0e22f5a65092c1174c44335"},
-]
-telnetlib3 = [
-    {file = "telnetlib3-1.0.4-py3-none-any.whl", hash = "sha256:39486f6a7f62ee24f3e2769d19bb7c4384dbc0cd7509fad15f5d94803722a4d4"},
-    {file = "telnetlib3-1.0.4.tar.gz", hash = "sha256:8945afd15914fdbd74eae22ef0d89bb633b8ab01e1770ad55ea29fd8b8fef1a4"},
 ]
 termcolor = [
     {file = "termcolor-1.1.0.tar.gz", hash = "sha256:1d6d69ce66211143803fbc56652b41d73b4a400a2891d7bf7a1cdf4c02de613b"},
