@@ -8,6 +8,7 @@
 
 from __future__ import annotations
 
+import asyncio
 import re
 
 from typing import TYPE_CHECKING
@@ -259,52 +260,66 @@ async def set_time(command: YaoCommand, controller, time: str):
 
 @mech.command(name="open")
 @click.argument(
-    "MECHANISM",
+    "MECHANISMS",
     type=click.Choice(["left", "right", "shutter"], case_sensitive=False),
-    default="shutter",
+    nargs=-1,
+    required=True,
 )
-async def openMech(command: YaoCommand, controller, mechanism: str):
+async def openMech(command: YaoCommand, controller, mechanisms: tuple[str, ...]):
     """Opens left or right Hartmann doors, or the shutter."""
 
-    if mechanism == "left":
-        dataTemp = "ol"
-    elif mechanism == "right":
-        dataTemp = "or"
-    elif mechanism == "shutter":
-        dataTemp = "os"
-    else:
-        return command.fail(f"Invalid mechanism {mechanism!r}.")
+    jobs = []
 
-    reply = await command.actor.spec_mech.send_data(dataTemp)
+    for mechanism in mechanisms:
+        if mechanism == "left":
+            dataTemp = "ol"
+        elif mechanism == "right":
+            dataTemp = "or"
+        elif mechanism == "shutter":
+            dataTemp = "os"
+        else:
+            return command.fail(f"Invalid mechanism {mechanism!r}.")
 
-    if not parse_reply(command, reply):
-        return
+        jobs.append(command.actor.spec_mech.send_data(dataTemp))
+
+    replies = await asyncio.gather(*jobs)
+
+    for reply in replies:
+        if not parse_reply(command, reply):
+            return
 
     return command.finish()
 
 
 @mech.command(name="close")
 @click.argument(
-    "MECHANISM",
+    "MECHANISMS",
     type=click.Choice(["left", "right", "shutter"], case_sensitive=False),
-    default="shutter",
+    nargs=-1,
+    required=True,
 )
-async def closeMech(command: YaoCommand, controller, mechanism: str):
+async def closeMech(command: YaoCommand, controller, mechanisms: tuple[str, ...]):
     """Closes left or right Hartmann doors, or the shutter."""
 
-    if mechanism == "left":
-        dataTemp = "cl"
-    elif mechanism == "right":
-        dataTemp = "cr"
-    elif mechanism == "shutter":
-        dataTemp = "cs"
-    else:
-        return command.fail(f"Invalid mechanism {mechanism!r}.")
+    jobs = []
 
-    reply = await command.actor.spec_mech.send_data(dataTemp)
+    for mechanism in mechanisms:
+        if mechanism == "left":
+            dataTemp = "cl"
+        elif mechanism == "right":
+            dataTemp = "cr"
+        elif mechanism == "shutter":
+            dataTemp = "cs"
+        else:
+            return command.fail(f"Invalid mechanism {mechanism!r}.")
 
-    if not parse_reply(command, reply):
-        return
+        jobs.append(command.actor.spec_mech.send_data(dataTemp))
+
+    replies = await asyncio.gather(*jobs)
+
+    for reply in replies:
+        if not parse_reply(command, reply):
+            return
 
     return command.finish()
 
