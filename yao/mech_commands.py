@@ -281,9 +281,6 @@ async def talk(command: YaoCommand, controllers, data: str):
 
     reply = await command.actor.spec_mech.send_data(data)
 
-    if not parse_reply(command, reply):
-        return
-
     # Remove telnet negotiations from raw string.
     match = re.match(b"^(?:\xff.+\xf0)?(.*)$", reply.raw, re.DOTALL)
     if not match:
