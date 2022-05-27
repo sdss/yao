@@ -81,9 +81,9 @@ def mech(*args):
             "pneumatics",
         ]
     ),
-    required=False,
+    required=True,
 )
-async def status(command: YaoCommand, controllers, stat: str | None = None):
+async def status(command: YaoCommand, controllers, stat: str):
     """Queries specMech for all status responses."""
 
     if stat == "time":
@@ -105,7 +105,7 @@ async def status(command: YaoCommand, controllers, stat: str | None = None):
     elif stat == "pneumatics":
         mech_command = "rp"
     else:
-        mech_command = "rs"
+        return command.fail(f"Invalid specMech status command {stat!r}.")
 
     mech = command.actor.spec_mech
 
