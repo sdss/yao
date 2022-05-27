@@ -31,7 +31,8 @@
     "setTime": { "type": "string" },
     "specMechVersion": { "type": "string" },
     "vacuumPumpRedDewar": { "type": "number" },
-    "vacuumPumpBlueDewar": { "type": "number" }
+    "vacuumPumpBlueDewar": { "type": "number" },
+    "mechRawReply": { "type": "string" }
   },
   "additionalProperties": false
 }

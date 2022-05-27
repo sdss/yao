@@ -8,6 +8,8 @@
 
 from __future__ import annotations
 
+import re
+
 from typing import TYPE_CHECKING
 
 import click
@@ -49,7 +51,7 @@ def parse_reply(command: YaoCommand, reply: SpecMechReply):
         )
         return False
 
-    if reply.code != ReplyCode.VALID:
+    if reply.code != ReplyCode.VALID and reply.code != ReplyCode.REBOOT_ACKNOWLEDGED:
         command.fail(f"Failed parsing specMech reply with error {reply.code.name!r}.")
         return False
 
@@ -81,7 +83,7 @@ def mech(*args):
     ),
     required=False,
 )
-async def status(command: YaoCommand, _, stat: str | None = None):
+async def status(command: YaoCommand, controllers, stat: str | None = None):
     """Queries specMech for all status responses."""
 
     if stat == "time":
@@ -204,5 +206,119 @@ async def status(command: YaoCommand, _, stat: str | None = None):
             red = float(value[2])
             blue = float(value[4])
             command.info(vacuumPumpRedDewar=red, vacuumPumpBlueDewar=blue)
+
+    return command.finish()
+
+
+@mech.command()
+async def ack(command: YaoCommand, controllers):
+    """Acknowledges the specMech has rebooted and informs the user."""
+
+    reply = await command.actor.spec_mech.send_data("!")
+
+    if not parse_reply(command, reply):
+        return
+
+    if reply.code != ReplyCode.REBOOT_ACKNOWLEDGED:
+        return command.fail("specMech did not acknowledge.")
+
+    return command.finish("specMech has been acknowledged.")
+
+
+@mech.command()
+@click.argument("DATA", type=str)
+async def talk(command: YaoCommand, controllers, data: str):
+    """Send data string directly as-is to the specMech."""
+
+    reply = await command.actor.spec_mech.send_data(data)
+
+    if not parse_reply(command, reply):
+        return
+
+    # Remove telnet negotiations from raw string.
+    match = re.match(b"^(?:\xff.+\xf0)?(.*)$", reply.raw, re.DOTALL)
+    if not match:
+        return command.fail("Failed parsing reply from specMech.")
+
+    return command.finish(mechRawReply=match.group(1).decode())
+
+
+@mech.command()
+@click.argument("TIME", type=str)
+async def set_time(command: YaoCommand, controller, time: str):
+    """Set the clock time of the specMech."""
+
+    dataTemp = f"st{time}"
+    reply = await command.actor.spec_mech.send_data(dataTemp)
+
+    if not parse_reply(command, reply):
+        return
+
+    return command.finish()
+
+
+@mech.command(name="open")
+@click.argument(
+    "MECHANISM",
+    type=click.Choice(["left", "right", "shutter"], case_sensitive=False),
+    default="shutter",
+)
+async def openMech(command: YaoCommand, controller, mechanism: str):
+    """Opens left or right Hartmann doors, or the shutter."""
+
+    if mechanism == "left":
+        dataTemp = "ol"
+    elif mechanism == "right":
+        dataTemp = "or"
+    elif mechanism == "shutter":
+        dataTemp = "os"
+    else:
+        return command.fail(f"Invalid mechanism {mechanism!r}.")
+
+    reply = await command.actor.spec_mech.send_data(dataTemp)
+
+    if not parse_reply(command, reply):
+        return
+
+    return command.finish()
+
+
+@mech.command(name="close")
+@click.argument(
+    "MECHANISM",
+    type=click.Choice(["left", "right", "shutter"], case_sensitive=False),
+    default="shutter",
+)
+async def closeMech(command: YaoCommand, controller, mechanism: str):
+    """Closes left or right Hartmann doors, or the shutter."""
+
+    if mechanism == "left":
+        dataTemp = "cl"
+    elif mechanism == "right":
+        dataTemp = "cr"
+    elif mechanism == "shutter":
+        dataTemp = "cs"
+    else:
+        return command.fail(f"Invalid mechanism {mechanism!r}.")
+
+    reply = await command.actor.spec_mech.send_data(dataTemp)
+
+    if not parse_reply(command, reply):
+        return
+
+    return command.finish()
+
+
+@mech.command()
+@click.argument("OFFSET", type=int)
+async def focus(command: YaoCommand, controller, offset: int):
+    """Send an offset to the specMech's 3 collimator motors."""
+
+    dataTemp = f"md{offset}"
+
+    reply = await command.actor.spec_mech.send_data(dataTemp)
+
+    if not parse_reply(command, reply):
+        return
 
     return command.finish()

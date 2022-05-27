@@ -31,6 +31,7 @@ class ReplyCode(enum.Enum):
     INVALID_REPLY_CHECKSUM = enum.auto()
     ERR_IN_REPLY = enum.auto()
     CONTROLLER_REBOOTED = enum.auto()
+    REBOOT_ACKNOWLEDGED = enum.auto()
 
 
 class SpecMechReply:
@@ -105,15 +106,20 @@ class SpecMechReply:
             self.code = ReplyCode.CONTROLLER_REBOOTED
             return
 
-        # Get only the part without telnel subnegotiations and without the
+        # Get only the part without telnet subnegotiations and without the
         # terminator.
-        match1 = re.match(b"(?:\xff.+\xf0)?(.+)\x00\n>", self.raw, re.DOTALL)
+        match1 = re.match(b"(?:\xff.+\xf0)?(.*?)\x00?\n?>", self.raw, re.DOTALL)
 
         if match1 is None or len(match1.groups()) != 1:
             self.code = ReplyCode.UNPARSABLE_RESPONSE
             return
 
         data = match1.group(1)
+
+        # Check if the the response indicates a reboot.
+        if data == b"":
+            self.code = ReplyCode.REBOOT_ACKNOWLEDGED
+            return
 
         match2 = re.match(rb"(\$S2CMD.+?)\r(?:\x00?\n(.+)\r)?", data, re.DOTALL)
 
@@ -122,7 +128,7 @@ class SpecMechReply:
             return
 
         cmd, replies = match2.groups()
-        print(cmd, replies)
+
         if not self.check_checksum(cmd):
             self.code = ReplyCode.INVALID_COMMAND_CHECKSUM
             return
