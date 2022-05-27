@@ -57,6 +57,10 @@ def parse_reply(command: YaoCommand, reply: SpecMechReply, fail: bool = True):
         )
         return False
 
+    if reply.code == ReplyCode.CONNECTION_FAILED:
+        write_func("The connection to the specMech failed. Try reconnecting.")
+        return False
+
     if reply.code != ReplyCode.VALID and reply.code != ReplyCode.REBOOT_ACKNOWLEDGED:
         write_func(f"Failed parsing specMech reply with error {reply.code.name!r}.")
         return False

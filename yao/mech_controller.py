@@ -32,6 +32,7 @@ class ReplyCode(enum.Enum):
     ERR_IN_REPLY = enum.auto()
     CONTROLLER_REBOOTED = enum.auto()
     REBOOT_ACKNOWLEDGED = enum.auto()
+    CONNECTION_FAILED = enum.auto()
 
 
 class SpecMechReply:
@@ -254,12 +255,20 @@ class MechController:
         # Send the command
         self.log.debug(f"Sent to specMech: {commandFinal!r}")
 
-        if self.writer is None:
-            raise RuntimeError("SpecMech client not connected.")
+        try:
+            if self.writer is None:
+                raise ConnectionResetError("SpecMech client not connected.")
 
-        async with self.lock:
-            self.writer.write(commandFinal.encode())
-            reply = await self.read_data()
+            async with self.lock:
+                self.writer.write(commandFinal.encode())
+                reply = await self.read_data()
+
+        except ConnectionResetError:
+            reply = SpecMechReply(b"")
+            reply.code = ReplyCode.CONNECTION_FAILED
+
+            self.writer = None
+            self.reader = None
 
         return reply
 
@@ -274,7 +283,7 @@ class MechController:
         """
 
         if self.reader is None:
-            raise RuntimeError("SpecMech client not connected.")
+            raise ConnectionResetError("SpecMech client not connected.")
 
         dataRaw = await self.reader.read(1024)
 
@@ -302,3 +311,6 @@ class MechController:
         if self.writer is not None:
             self.writer.close()
             await self.writer.wait_closed()
+
+        self.writer = None
+        self.reader = None
