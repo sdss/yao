@@ -29,7 +29,7 @@ if TYPE_CHECKING:
 __all__ = ["mech"]
 
 
-def parse_reply(command: YaoCommand, reply: SpecMechReply):
+def parse_reply(command: YaoCommand, reply: SpecMechReply, fail: bool = True):
     """Parses a reply from the mech controller.
 
     If the reply indicates an error or that the controller has been rebooted,
@@ -37,26 +37,74 @@ def parse_reply(command: YaoCommand, reply: SpecMechReply):
 
     """
 
+    if fail:
+        write_func = command.fail
+    else:
+        write_func = command.error
+
     if reply.code == ReplyCode.ERR_IN_REPLY:
         for reply_data in reply.data:
             if "ERR" in reply_data[0]:
                 code, message = reply_data[1:]
-                command.fail(f"Error {code} found in specMech reply: {message!r}.")
+                write_func(f"Error {code} found in specMech reply: {message!r}.")
                 break
         return False
 
     if reply.code == ReplyCode.CONTROLLER_REBOOTED:
-        command.fail(
+        write_func(
             "The specMech controller has rebooted. "
             "Acknowledge the reboot before continuing."
         )
         return False
 
     if reply.code != ReplyCode.VALID and reply.code != ReplyCode.REBOOT_ACKNOWLEDGED:
-        command.fail(f"Failed parsing specMech reply with error {reply.code.name!r}.")
+        write_func(f"Failed parsing specMech reply with error {reply.code.name!r}.")
         return False
 
     return True
+
+
+async def check_pneumatics_transition(
+    command: YaoCommand, mechanisms: tuple[str, ...], destination: str
+):
+    """Checks that all the mechanisms have arrived to their desired position."""
+
+    # Try twice, then fail.
+    for ii in [1, 2]:
+        await asyncio.sleep(command.actor.config["timeouts"]["pneumatics"])
+
+        reached = True
+
+        status = await command.actor.spec_mech.send_data("rp")
+        if not parse_reply(command, status, fail=False):
+            command.fail("Failed checking the status of the pneumatics after a move.")
+            return False
+
+        for mech in mechanisms:
+            if mech == "shutter":
+                mech_position = status.data[0][2]
+            elif mech == "left":
+                mech_position = status.data[0][4]
+            elif mech == "shutter":
+                mech_position = status.data[0][6]
+            else:
+                continue
+
+            if mech_position != destination[0].lower():
+                reached = False
+
+        if reached is True:
+            return True
+
+        if ii == 1:
+            command.warning(
+                "Pneumatics did not reach the desired position. "
+                "Waiting a bit longer ..."
+            )
+        else:
+            command.fail("Pneumatics did not reach the desired position.")
+
+    return False
 
 
 @parser.group()
@@ -288,6 +336,9 @@ async def openMech(command: YaoCommand, controller, mechanisms: tuple[str, ...])
         if not parse_reply(command, reply):
             return
 
+    if not (await check_pneumatics_transition(command, mechanisms, "open")):
+        return
+
     return command.finish()
 
 
@@ -320,6 +371,9 @@ async def closeMech(command: YaoCommand, controller, mechanisms: tuple[str, ...]
     for reply in replies:
         if not parse_reply(command, reply):
             return
+
+    if not (await check_pneumatics_transition(command, mechanisms, "close")):
+        return
 
     return command.finish()
 

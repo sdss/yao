@@ -70,3 +70,4 @@ timeouts:
   fetching_expected: 5
   fetching_max: 10
   flushing: 1.2
+  pneumatics: 1.5
