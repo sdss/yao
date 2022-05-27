@@ -39,6 +39,11 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
+      - name: Disable ipv6
+        run: |
+          sudo sysctl -w net.ipv6.conf.all.disable_ipv6=1
+          sudo sysctl -w net.ipv6.conf.default.disable_ipv6=1
+
       - name: Install poetry
         run: |
           curl -sSL https://install.python-poetry.org | python3 - --git https://github.com/python-poetry/poetry.git@master
