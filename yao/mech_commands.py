@@ -392,3 +392,37 @@ async def focus(command: YaoCommand, controller, offset: int):
         return
 
     return command.finish()
+
+
+@mech.command()
+async def reboot(command: YaoCommand, controller):
+    """Reboots the controller. A reconnect and acknowledge are needed afterewards."""
+
+    dataTemp = "R"
+
+    reply = await command.actor.spec_mech.send_data(dataTemp)
+
+    if not parse_reply(command, reply):
+        return
+
+    return command.finish(
+        "specMech has been rebooted. You need to reconnect and acknowledge."
+    )
+
+
+@mech.command()
+async def reconnect(command: YaoCommand, controller):
+    """Recreates the connection to the specMech."""
+
+    await command.actor.spec_mech.close()
+
+    await asyncio.sleep(2)
+
+    try:
+        await command.actor.spec_mech.start()
+        if command.actor.spec_mech.writer is None:
+            raise ConnectionError()
+    except Exception as err:
+        return command.fail(f"Failed reconnecting to the specMech: {err}")
+
+    return command.finish("The connection to the specMech has been reestablished.")
