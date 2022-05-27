@@ -6,12 +6,18 @@
 # @Filename: actor.py
 # @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
 
-import os
+from __future__ import annotations
 
+import json
+import os
+import pathlib
+
+from clu import Command
 from clu.legacy import LegacyActor
 
 from archon import log as archon_log
 from archon.actor.actor import ArchonBaseActor
+from archon.actor.tools import get_schema
 
 from yao import config
 from yao.commands import parser
@@ -31,13 +37,9 @@ class YaoActor(ArchonBaseActor, LegacyActor):
 
         self._message_processor = self._process_message
 
-        root_path = os.path.dirname(__file__)
+        schema = self.merge_schemas(kwargs.pop("schema", None))
 
-        if "schema" in kwargs:
-            if kwargs["schema"] is not None and not os.path.isabs(kwargs["schema"]):
-                kwargs["schema"] = os.path.join(root_path, kwargs["schema"])
-
-        super().__init__(*args, **kwargs)
+        super().__init__(*args, schema=schema, **kwargs)
 
         # TODO: this assumes one single mech controller, not one per spectrograph,
         # but in practice for now that's fine.
@@ -60,6 +62,27 @@ class YaoActor(ArchonBaseActor, LegacyActor):
             raise ConnectionError(f"Failed connecting to mech controller: {err}")
 
         return await super().start()
+
+    def merge_schemas(self, yao_schema_path: str | None = None):
+        """Merge default schema with the one from yao."""
+
+        schema = get_schema()  # Default archon schema.
+
+        if yao_schema_path:
+            root_path = pathlib.Path(__file__).absolute().parent
+            if not os.path.isabs(yao_schema_path):
+                yao_schema_path = os.path.join(str(root_path), yao_schema_path)
+
+            yao_schema = json.loads(open(yao_schema_path, "r").read())
+
+            schema["definitions"].update(yao_schema.get("definitions", {}))
+            schema["properties"].update(yao_schema.get("properties", {}))
+            schema["patternProperties"].update(yao_schema.get("patternProperties", {}))
+
+            if "additionalProperties" in yao_schema:
+                schema["additionalProperties"] = yao_schema["additionalProperties"]
+
+        return schema
 
     @staticmethod
     def _process_message(message: dict):
@@ -99,3 +122,6 @@ class YaoActor(ArchonBaseActor, LegacyActor):
         """Creates an actor from the internal package configuration."""
 
         return super().from_config(config if file is None else file)
+
+
+YaoCommand = Command[YaoActor]
