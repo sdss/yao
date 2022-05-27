@@ -44,31 +44,34 @@ jobs:
           sudo sysctl -w net.ipv6.conf.all.disable_ipv6=1
           sudo sysctl -w net.ipv6.conf.default.disable_ipv6=1
 
-      - name: Install poetry
-        run: |
-          curl -sSL https://install.python-poetry.org | python3 - --git https://github.com/python-poetry/poetry.git@master
+      # - name: Install poetry
+      #   run: |
+      #     curl -sSL https://install.python-poetry.org | python3 - --git https://github.com/python-poetry/poetry.git@master
 
-      - name: Install dependencies
-        run: |
-          poetry install
+      # - name: Install dependencies
+      #   run: |
+      #     poetry install
 
       - name: Lint with flake8
         run: |
-          poetry run flake8 . --count --show-source --statistics
+          pip install flake8
+          flake8 . --count --show-source --statistics
 
       - name: Lint with black
         run: |
-          poetry run black --check .
+          pip install black
+          black --check .
 
       - name: Lint with isort
         run: |
-          poetry run isort -c yao
+          pip install isort
+          isort -c yao
 
-      - name: Test with pytest
-        run: |
-          poetry run pytest
+      # - name: Test with pytest
+      #   run: |
+      #     poetry run pytest
 
-      - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v3
-        with:
-          file: ./coverage.xml
+      # - name: Upload coverage to Codecov
+      #   uses: codecov/codecov-action@v3
+      #   with:
+      #     file: ./coverage.xml
