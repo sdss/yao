@@ -132,6 +132,7 @@ def mech(*args):
             "motor-c",
             "orientation",
             "pneumatics",
+            "nitrogen",
         ]
     ),
     required=True,
@@ -157,6 +158,8 @@ async def status(command: YaoCommand, controllers, stat: str):
         mech_command = "ro"
     elif stat == "pneumatics":
         mech_command = "rp"
+    elif stat == "nitrogen":
+        mech_command = "rn"
     else:
         return command.fail(f"Invalid specMech status command {stat!r}.")
 
@@ -258,7 +261,66 @@ async def status(command: YaoCommand, controllers, stat: str):
         elif reply.sentence == "VAC":
             red = float(value[2])
             blue = float(value[4])
-            command.info(vacuumPumpRedDewar=red, vacuumPumpBlueDewar=blue)
+        elif reply.sentence == "LN2":
+            valves = []
+            for valve_status in value[2]:
+                if valve_status.upper() == "C":
+                    valves.append("closed")
+                elif valve_status.upper() == "O":
+                    valves.append("open")
+                elif valve_status.upper() == "T":
+                    valves.append("timeout")
+                elif valve_status.upper() == "X":
+                    valves.append("disabled")
+                else:
+                    valves.append("?")
+
+            (
+                buffer_dewar_supply_status,
+                buffer_dewar_vent_status,
+                red_dewar_vent_status,
+                blue_dewar_vent_status,
+            ) = valves
+
+            time_next_fill = int(value[3])
+            max_valve_open_time = int(value[5])
+            fill_interval = int(value[7])
+            ln2_pressure = int(value[9])
+
+            if value[11].upper() == "C":
+                buffer_dewar_thermistor_status = "cold"
+            elif value[11].upper() == "H":
+                buffer_dewar_thermistor_status = "warm"
+            else:
+                buffer_dewar_thermistor_status = "?"
+
+            if value[13].upper() == "C":
+                red_dewar_thermistor_status = "cold"
+            elif value[13].upper() == "H":
+                red_dewar_thermistor_status = "warm"
+            else:
+                red_dewar_thermistor_status = "?"
+
+            if value[15].upper() == "C":
+                blue_dewar_thermistor_status = "cold"
+            elif value[15].upper() == "H":
+                blue_dewar_thermistor_status = "warm"
+            else:
+                blue_dewar_thermistor_status = "?"
+
+            command.info(
+                buffer_dewar_supply_status=buffer_dewar_supply_status,
+                buffer_dewar_vent_status=buffer_dewar_vent_status,
+                red_dewar_vent_status=red_dewar_vent_status,
+                blue_dewar_vent_status=blue_dewar_vent_status,
+                time_next_fill=time_next_fill,
+                max_valve_open_time=max_valve_open_time,
+                fill_interval=fill_interval,
+                ln2_pressure=ln2_pressure,
+                buffer_dewar_thermistor_status=buffer_dewar_thermistor_status,
+                red_dewar_thermistor_status=red_dewar_thermistor_status,
+                blue_dewar_thermistor_status=blue_dewar_thermistor_status,
+            )
 
     return command.finish()
 

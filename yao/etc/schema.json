@@ -23,16 +23,28 @@
       "items": { "type": "number" }
     },
     "shutter": { "type": "string" },
-    "hartmannLeft": { "type": "string" },
-    "hartmannRight": { "type": "string" },
-    "airPressure": { "type": "string" },
-    "bootTime": { "type": "string" },
-    "clockTime": { "type": "string" },
-    "setTime": { "type": "string" },
-    "specMechVersion": { "type": "string" },
-    "vacuumPumpRedDewar": { "type": "number" },
-    "vacuumPumpBlueDewar": { "type": "number" },
-    "mechRawReply": { "type": "string" }
+    "vacuum_pump_red_dewar": { "type": "number" },
+    "vacuum_pump_blue_dewar": { "type": "number" },
+    "mech_raw_reply": { "type": "string" },
+    "buffer_dewar_supply_status": {
+      "enum": ["open", "closed", "timeout", "disabled", "?"]
+    },
+    "buffer_dewar_vent_status": {
+      "enum": ["open", "closed", "timeout", "disabled", "?"]
+    },
+    "red_dewar_vent_status": {
+      "enum": ["open", "closed", "timeout", "disabled", "?"]
+    },
+    "blue_dewar_vent_status": {
+      "enum": ["open", "closed", "timeout", "disabled", "?"]
+    },
+    "time_next_fill": { "type": "integer" },
+    "max_valve_open_time": { "type": "integer" },
+    "fill_interval": { "type": "integer" },
+    "ln2_pressure": { "type": "integer", "$comment": "In kPa" },
+    "buffer_dewar_thermistor_status": { "enum": ["cold", "warm", "?"] },
+    "red_dewar_thermistor_status": { "enum": ["cold", "warm", "?"] },
+    "blue_dewar_thermistor_status": { "enum": ["cold", "warm", "?"] }
   },
   "additionalProperties": false
 }
