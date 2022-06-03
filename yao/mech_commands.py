@@ -118,211 +118,215 @@ def mech(*args):
     pass
 
 
+stats = [
+    "time",
+    "version",
+    "environment",
+    "vacuum",
+    "motor-a",
+    "motor-b",
+    "motor-c",
+    "orientation",
+    "pneumatics",
+    "nitrogen",
+]
+
+
 @mech.command()
-@click.argument(
-    "STAT",
-    type=click.Choice(
-        [
-            "time",
-            "version",
-            "environment",
-            "vacuum",
-            "motor-a",
-            "motor-b",
-            "motor-c",
-            "orientation",
-            "pneumatics",
-            "nitrogen",
-        ]
-    ),
-    required=True,
-)
-async def status(command: YaoCommand, controllers, stat: str):
+@click.argument("STAT", type=click.Choice(stats), required=False)
+async def status(command: YaoCommand, controllers, stat: str | None = None):
     """Queries specMech for all status responses."""
 
-    if stat == "time":
-        mech_command = "rt"
-    elif stat == "version":
-        mech_command = "rV"
-    elif stat == "environment":
-        mech_command = "re"
-    elif stat == "vacuum":
-        mech_command = "rv"
-    elif stat == "motor-a":
-        mech_command = "ra"
-    elif stat == "motor-b":
-        mech_command = "rb"
-    elif stat == "motor-c":
-        mech_command = "rc"
-    elif stat == "orientation":
-        mech_command = "ro"
-    elif stat == "pneumatics":
-        mech_command = "rp"
-    elif stat == "nitrogen":
-        mech_command = "rn"
+    if stat is None:
+        process_stats = stats
     else:
-        return command.fail(f"Invalid specMech status command {stat!r}.")
+        process_stats = [stat]
 
-    mech = command.actor.spec_mech
+    for this_stat in process_stats:
 
-    reply = await mech.send_data(mech_command)
+        if this_stat == "time":
+            mech_command = "rt"
+        elif this_stat == "version":
+            mech_command = "rV"
+        elif this_stat == "environment":
+            mech_command = "re"
+        elif this_stat == "vacuum":
+            mech_command = "rv"
+        elif this_stat == "motor-a":
+            mech_command = "ra"
+        elif this_stat == "motor-b":
+            mech_command = "rb"
+        elif this_stat == "motor-c":
+            mech_command = "rc"
+        elif this_stat == "orientation":
+            mech_command = "ro"
+        elif this_stat == "pneumatics":
+            mech_command = "rp"
+        elif this_stat == "nitrogen":
+            mech_command = "rn"
+        else:
+            return command.fail(f"Invalid specMech status command {this_stat!r}.")
 
-    if not parse_reply(command, reply):
-        return
+        mech = command.actor.spec_mech
 
-    for value in reply.data:
-        if reply.sentence == "MTR":
-            mtr = value[2]
-            mtrPosition = value[3]
-            mtrPositionUnits = value[4]
-            mtrSpeed = value[5]
-            mtrSpeedUnits = value[6]
-            mtrCurrent = value[7]
-            mtrCurrentUnits = value[8]
-            command.info(
-                motor=[
-                    mtr,
-                    f"{mtrPosition} {mtrPositionUnits}",
-                    f"{mtrSpeed} {mtrSpeedUnits}",
-                    f"{mtrCurrent} {mtrCurrentUnits})",
-                ]
-            )
+        reply = await mech.send_data(mech_command)
 
-        elif reply.sentence == "ENV":
-            env0T = float(value[2])
-            env0H = float(value[4])
-            env1T = float(value[6])
-            env1H = float(value[8])
-            env2T = float(value[10])
-            env2H = float(value[12])
-            specMechT = float(value[14])
-            command.info(
-                temperature0=env0T,
-                humidity0=env0H,
-                temperature1=env1T,
-                humidity1=env1H,
-                temperature2=env2T,
-                humidity2=env2H,
-                specMech_temp=specMechT,
-            )
+        if not parse_reply(command, reply, fail=False):
+            continue
 
-        elif reply.sentence == "ORI":
-            accx = float(value[2])
-            accy = float(value[3])
-            accz = float(value[4])
-            command.info(accelerometer=[accx, accy, accz])
+        for value in reply.data:
+            if reply.sentence == "MTR":
+                mtr = value[2]
+                mtrPosition = value[3]
+                mtrPositionUnits = value[4]
+                mtrSpeed = value[5]
+                mtrSpeedUnits = value[6]
+                mtrCurrent = value[7]
+                mtrCurrentUnits = value[8]
+                command.info(
+                    motor=[
+                        mtr,
+                        f"{mtrPosition} {mtrPositionUnits}",
+                        f"{mtrSpeed} {mtrSpeedUnits}",
+                        f"{mtrCurrent} {mtrCurrentUnits})",
+                    ]
+                )
 
-        elif reply.sentence == "PNU":
-            # change the c/o/t and 0/1 responses of specMech
-            # to something more readable
-            if value[2] == "c":
-                pnus = "closed"
-            elif value[2] == "o":
-                pnus = "open"
-            else:
-                pnus = "transiting"
+            elif reply.sentence == "ENV":
+                env0T = float(value[2])
+                env0H = float(value[4])
+                env1T = float(value[6])
+                env1H = float(value[8])
+                env2T = float(value[10])
+                env2H = float(value[12])
+                specMechT = float(value[14])
+                command.info(
+                    temperature0=env0T,
+                    humidity0=env0H,
+                    temperature1=env1T,
+                    humidity1=env1H,
+                    temperature2=env2T,
+                    humidity2=env2H,
+                    specMech_temp=specMechT,
+                )
 
-            if value[4] == "c":
-                pnul = "closed"
-            elif value[4] == "o":
-                pnul = "open"
-            else:
-                pnul = "transiting"
+            elif reply.sentence == "ORI":
+                accx = float(value[2])
+                accy = float(value[3])
+                accz = float(value[4])
+                command.info(accelerometer=[accx, accy, accz])
 
-            if value[6] == "c":
-                pnur = "closed"
-            elif value[6] == "o":
-                pnur = "open"
-            else:
-                pnur = "transiting"
-
-            if value[8] == "0":
-                pnup = "off"
-            else:
-                pnup = "on"
-
-            command.info(
-                shutter=pnus,
-                hartmann_left=pnul,
-                hartmann_right=pnur,
-                air_pressure=pnup,
-            )
-
-        elif reply.sentence == "TIM":
-            tim = value[1]
-            stim = value[2]
-            btm = value[4]
-            command.info(boot_time=btm, clock_time=tim, set_time=stim)
-
-        elif reply.sentence == "VER":
-            ver = value[2]
-            command.info(specMech_version=ver)
-
-        elif reply.sentence == "VAC":
-            red = float(value[2])
-            blue = float(value[4])
-            command.info(vacuum_pump_red_dewar=red, vacuum_pump_blue_dewar=blue)
-
-        elif reply.sentence == "LN2":
-            valves = []
-            for valve_status in value[2]:
-                if valve_status.upper() == "C":
-                    valves.append("closed")
-                elif valve_status.upper() == "O":
-                    valves.append("open")
-                elif valve_status.upper() == "T":
-                    valves.append("timeout")
-                elif valve_status.upper() == "X":
-                    valves.append("disabled")
+            elif reply.sentence == "PNU":
+                # change the c/o/t and 0/1 responses of specMech
+                # to something more readable
+                if value[2] == "c":
+                    pnus = "closed"
+                elif value[2] == "o":
+                    pnus = "open"
                 else:
-                    valves.append("?")
+                    pnus = "transiting"
 
-            (
-                buffer_dewar_supply_status,
-                buffer_dewar_vent_status,
-                red_dewar_vent_status,
-                blue_dewar_vent_status,
-            ) = valves
+                if value[4] == "c":
+                    pnul = "closed"
+                elif value[4] == "o":
+                    pnul = "open"
+                else:
+                    pnul = "transiting"
 
-            time_next_fill = int(value[3])
-            max_valve_open_time = int(value[5])
-            fill_interval = int(value[7])
-            ln2_pressure = int(value[9])
+                if value[6] == "c":
+                    pnur = "closed"
+                elif value[6] == "o":
+                    pnur = "open"
+                else:
+                    pnur = "transiting"
 
-            if value[11].upper() == "C":
-                buffer_dewar_thermistor_status = "cold"
-            elif value[11].upper() == "H":
-                buffer_dewar_thermistor_status = "warm"
-            else:
-                buffer_dewar_thermistor_status = "?"
+                if value[8] == "0":
+                    pnup = "off"
+                else:
+                    pnup = "on"
 
-            if value[13].upper() == "C":
-                red_dewar_thermistor_status = "cold"
-            elif value[13].upper() == "H":
-                red_dewar_thermistor_status = "warm"
-            else:
-                red_dewar_thermistor_status = "?"
+                command.info(
+                    shutter=pnus,
+                    hartmann_left=pnul,
+                    hartmann_right=pnur,
+                    air_pressure=pnup,
+                )
 
-            if value[15].upper() == "C":
-                blue_dewar_thermistor_status = "cold"
-            elif value[15].upper() == "H":
-                blue_dewar_thermistor_status = "warm"
-            else:
-                blue_dewar_thermistor_status = "?"
+            elif reply.sentence == "TIM":
+                tim = value[1]
+                stim = value[2]
+                btm = value[4]
+                command.info(boot_time=btm, clock_time=tim, set_time=stim)
 
-            command.info(
-                buffer_dewar_supply_status=buffer_dewar_supply_status,
-                buffer_dewar_vent_status=buffer_dewar_vent_status,
-                red_dewar_vent_status=red_dewar_vent_status,
-                blue_dewar_vent_status=blue_dewar_vent_status,
-                time_next_fill=time_next_fill,
-                max_valve_open_time=max_valve_open_time,
-                fill_interval=fill_interval,
-                ln2_pressure=ln2_pressure,
-                buffer_dewar_thermistor_status=buffer_dewar_thermistor_status,
-                red_dewar_thermistor_status=red_dewar_thermistor_status,
-                blue_dewar_thermistor_status=blue_dewar_thermistor_status,
-            )
+            elif reply.sentence == "VER":
+                ver = value[2]
+                command.info(specMech_version=ver)
+
+            elif reply.sentence == "VAC":
+                red = float(value[2])
+                blue = float(value[4])
+                command.info(vacuum_pump_red_dewar=red, vacuum_pump_blue_dewar=blue)
+
+            elif reply.sentence == "LN2":
+                valves = []
+                for valve_status in value[2]:
+                    if valve_status.upper() == "C":
+                        valves.append("closed")
+                    elif valve_status.upper() == "O":
+                        valves.append("open")
+                    elif valve_status.upper() == "T":
+                        valves.append("timeout")
+                    elif valve_status.upper() == "X":
+                        valves.append("disabled")
+                    else:
+                        valves.append("?")
+
+                (
+                    buffer_dewar_supply_status,
+                    buffer_dewar_vent_status,
+                    red_dewar_vent_status,
+                    blue_dewar_vent_status,
+                ) = valves
+
+                time_next_fill = int(value[3])
+                max_valve_open_time = int(value[5])
+                fill_interval = int(value[7])
+                ln2_pressure = int(value[9])
+
+                if value[11].upper() == "C":
+                    buffer_dewar_thermistor_status = "cold"
+                elif value[11].upper() == "H":
+                    buffer_dewar_thermistor_status = "warm"
+                else:
+                    buffer_dewar_thermistor_status = "?"
+
+                if value[13].upper() == "C":
+                    red_dewar_thermistor_status = "cold"
+                elif value[13].upper() == "H":
+                    red_dewar_thermistor_status = "warm"
+                else:
+                    red_dewar_thermistor_status = "?"
+
+                if value[15].upper() == "C":
+                    blue_dewar_thermistor_status = "cold"
+                elif value[15].upper() == "H":
+                    blue_dewar_thermistor_status = "warm"
+                else:
+                    blue_dewar_thermistor_status = "?"
+
+                command.info(
+                    buffer_dewar_supply_status=buffer_dewar_supply_status,
+                    buffer_dewar_vent_status=buffer_dewar_vent_status,
+                    red_dewar_vent_status=red_dewar_vent_status,
+                    blue_dewar_vent_status=blue_dewar_vent_status,
+                    time_next_fill=time_next_fill,
+                    max_valve_open_time=max_valve_open_time,
+                    fill_interval=fill_interval,
+                    ln2_pressure=ln2_pressure,
+                    buffer_dewar_thermistor_status=buffer_dewar_thermistor_status,
+                    red_dewar_thermistor_status=red_dewar_thermistor_status,
+                    blue_dewar_thermistor_status=blue_dewar_thermistor_status,
+                )
 
     return command.finish()
 
