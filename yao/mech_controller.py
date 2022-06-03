@@ -154,7 +154,7 @@ class SpecMechReply:
                 self.code = ReplyCode.INVALID_REPLY_CHECKSUM
                 return
 
-            match3 = re.match(rb"^\$S2([A-Za-z]+),(.+?)\*[0-9A-Fa-f]+$", reply)
+            match3 = re.match(rb"^\$S2([A-Za-z0-9]+),(.+?)\*[0-9A-Fa-f]+$", reply)
 
             if match3 is None or len(match2.groups()) != 2:
                 self.code = ReplyCode.UNPARSABLE_RESPONSE
