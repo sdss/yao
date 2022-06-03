@@ -76,7 +76,7 @@ class SpecMechReply:
         for b in message:
             checksum ^= b
 
-        return f"{checksum:0X}"
+        return f"{checksum:02X}"
 
     @staticmethod
     def check_checksum(message: bytes):
