@@ -203,7 +203,7 @@ async def status(command: YaoCommand, controllers, stat: str):
                 humidity1=env1H,
                 temperature2=env2T,
                 humidity2=env2H,
-                specMechTemp=specMechT,
+                specMech_temp=specMechT,
             )
 
         elif reply.sentence == "ORI":
@@ -243,24 +243,26 @@ async def status(command: YaoCommand, controllers, stat: str):
 
             command.info(
                 shutter=pnus,
-                hartmannLeft=pnul,
-                hartmannRight=pnur,
-                airPressure=pnup,
+                hartmann_left=pnul,
+                hartmann_right=pnur,
+                air_pressure=pnup,
             )
 
         elif reply.sentence == "TIM":
             tim = value[1]
             stim = value[2]
             btm = value[4]
-            command.info(bootTime=btm, clockTime=tim, setTime=stim)
+            command.info(boot_time=btm, clock_time=tim, set_time=stim)
 
         elif reply.sentence == "VER":
             ver = value[2]
-            command.info(specMechVersion=ver)
+            command.info(specMech_version=ver)
 
         elif reply.sentence == "VAC":
             red = float(value[2])
             blue = float(value[4])
+            command.info(vacuum_pump_red_dewar=red, vacuum_pump_blue_dewar=blue)
+
         elif reply.sentence == "LN2":
             valves = []
             for valve_status in value[2]:
@@ -352,7 +354,7 @@ async def talk(command: YaoCommand, controllers, data: str):
     if not match:
         return command.fail("Failed parsing reply from specMech.")
 
-    return command.finish(mechRawReply=match.group(1).decode())
+    return command.finish(mech_raw_reply=match.group(1).decode())
 
 
 @mech.command()
