@@ -459,21 +459,6 @@ async def closeMech(command: YaoCommand, controller, mechanisms: tuple[str, ...]
 
 
 @mech.command()
-@click.argument("OFFSET", type=int)
-async def focus(command: YaoCommand, controller, offset: int):
-    """Send an offset to the specMech's 3 collimator motors."""
-
-    dataTemp = f"md{offset}"
-
-    reply = await command.actor.spec_mech.send_data(dataTemp)
-
-    if not parse_reply(command, reply):
-        return
-
-    return command.finish()
-
-
-@mech.command()
 async def reboot(command: YaoCommand, controller):
     """Reboots the controller. A reconnect and acknowledge are needed afterewards."""
 
