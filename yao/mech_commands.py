@@ -117,6 +117,7 @@ FAILED_STAT_REPLIES = {
     "time": ["?"] * 3,
     "version": ["?"],
     "vacuum": [-999.0, -999.0],
+    "specmech": ["?", -999.0],
 }
 
 
@@ -128,7 +129,7 @@ async def status(command: YaoCommand, controllers, stat: str | None = None):
     if stat is None:
         process_stats = list(STATS)
     else:
-        process_stats = [stat]
+        process_stats = [stat.lower()]
 
     for this_stat in process_stats:
 
@@ -184,6 +185,12 @@ async def status(command: YaoCommand, controllers, stat: str | None = None):
             command.info(
                 vacuum_pump_red_dewar=values[0],
                 vacuum_pump_blue_dewar=values[1],
+            )
+
+        elif this_stat == "specmech":
+            command.info(
+                fan=values[0],
+                fan_volts=values[1],
             )
 
         elif this_stat == "nitrogen":
@@ -507,3 +514,21 @@ async def disconnect(command: YaoCommand, controller):
     await command.actor.spec_mech.close()
 
     return command.finish("The connection to the specMech has been closed.")
+
+
+@mech.command()
+@click.argument("MODE", type=click.Choice(["on", "off"], case_sensitive=False))
+async def fan(command: YaoCommand, controller, mode: str):
+    """Turns the speMech fan on/off."""
+
+    if mode == "on":
+        mech_command = "sf+"
+    else:
+        mech_command = "sf-"
+
+    reply = await command.actor.spec_mech.send_data(mech_command)
+
+    if not parse_reply(command, reply):
+        return
+
+    return command.finish(fan="on" if mode == "on" else "off")

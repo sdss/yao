@@ -61,7 +61,9 @@
     "ln2_pressure": { "type": "integer", "$comment": "In kPa" },
     "buffer_dewar_thermistor_status": { "enum": ["cold", "warm", "?"] },
     "red_dewar_thermistor_status": { "enum": ["cold", "warm", "?"] },
-    "blue_dewar_thermistor_status": { "enum": ["cold", "warm", "?"] }
+    "blue_dewar_thermistor_status": { "enum": ["cold", "warm", "?"] },
+    "fan": { "enum": ["on", "off", "?"] },
+    "fan_volts": { "type": "number" }
   },
   "additionalProperties": false
 }

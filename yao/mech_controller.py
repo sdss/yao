@@ -36,6 +36,7 @@ STATS: dict[str, str] = {
     "orientation": "ro",
     "pneumatics": "rp",
     "nitrogen": "rn",
+    "specmech": "rs",
 }
 
 
@@ -370,6 +371,8 @@ class MechController:
 
         """
 
+        stat = stat.lower()
+
         if stat in STATS:
             mech_command = STATS[stat]
         else:
@@ -521,6 +524,11 @@ class MechController:
                 red_dewar_thermistor_status,
                 blue_dewar_thermistor_status,
             )
+
+        elif "specmech":
+            fan = "on" if int(values[2]) else "off"
+            volts = float(values[4])
+            return (fan, volts)
 
         else:
             raise SpecMechError(f"Invalid reply sentence {reply.sentence}.")
