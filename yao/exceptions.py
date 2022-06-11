@@ -25,6 +25,10 @@ class YaoNotImplemented(YaoError):
         super(YaoNotImplemented, self).__init__(message)
 
 
+class SpecMechError(YaoError):
+    """A specMech error."""
+
+
 class YaoMissingDependency(YaoError):
     """A custom exception for missing dependencies."""
 

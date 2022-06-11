@@ -13,12 +13,51 @@ import enum
 import re
 import warnings
 
+from typing import Any
+
 from sdsstools.logger import SDSSLogger
 
-from .exceptions import YaoUserWarning
+from .exceptions import SpecMechError, YaoUserWarning
 
 
-__all__ = ["MechController"]
+__all__ = ["MechController", "ReplyCode", "SpecMechReply", "STATS", "check_reply"]
+
+
+#: Stat names accepted by the report command.
+STATS: dict[str, str] = {
+    "time": "rt",
+    "version": "rV",
+    "environment": "re",
+    "vacuum": "rv",
+    "motor-a": "ra",
+    "motor-b": "rb",
+    "motor-c": "rc",
+    "orientation": "ro",
+    "pneumatics": "rp",
+    "nitrogen": "rn",
+}
+
+
+def check_reply(reply: SpecMechReply):
+    """Checks a specMech reply."""
+
+    if reply.code == ReplyCode.ERR_IN_REPLY:
+        for reply_data in reply.data:
+            if "ERR" in reply_data[0]:
+                code, msg = reply_data[1:]
+                raise SpecMechError(f"Error {code} found in specMech reply: {msg!r}.")
+
+    if reply.code == ReplyCode.CONTROLLER_REBOOTED:
+        raise SpecMechError(
+            "The specMech controller has rebooted. "
+            "Acknowledge the reboot before continuing."
+        )
+
+    if reply.code == ReplyCode.CONNECTION_FAILED:
+        raise SpecMechError("The connection to the specMech failed. Try reconnecting.")
+
+    if reply.code != ReplyCode.VALID and reply.code != ReplyCode.REBOOT_ACKNOWLEDGED:
+        raise SpecMechError(f"Failed parsing specMech reply: {reply.code.name!r}.")
 
 
 class ReplyCode(enum.Enum):
@@ -314,3 +353,169 @@ class MechController:
 
         self.writer = None
         self.reader = None
+
+    async def get_stat(self, stat: str) -> tuple[Any, ...]:
+        """Returns the output of the report commands.
+
+        Parameters
+        ----------
+        stat
+            The report stat to recover. One of `.STATS`.
+
+        Returns
+        -------
+        reply
+            The parsed command reply values.
+
+        """
+
+        if stat in STATS:
+            mech_command = STATS[stat]
+        else:
+            raise SpecMechError(f"Invalid specMech stat {stat!r}.")
+
+        reply = await self.send_data(mech_command)
+        check_reply(reply)
+
+        values = reply.data[0]
+
+        if reply.sentence == "MTR":
+            mtr = values[2]
+            mtrPosition = values[3]
+            mtrPositionUnits = values[4]
+            mtrSpeed = values[5]
+            mtrSpeedUnits = values[6]
+            mtrCurrent = values[7]
+            mtrCurrentUnits = values[8]
+            return (
+                mtr,
+                f"{mtrPosition} {mtrPositionUnits}",
+                f"{mtrSpeed} {mtrSpeedUnits}",
+                f"{mtrCurrent} {mtrCurrentUnits})",
+            )
+
+        elif reply.sentence == "ENV":
+            env0T = float(values[2])
+            env0H = float(values[4])
+            env1T = float(values[6])
+            env1H = float(values[8])
+            env2T = float(values[10])
+            env2H = float(values[12])
+            specMechT = float(values[14])
+            return (env0T, env0H, env1T, env1H, env2T, env2H, specMechT)
+
+        elif reply.sentence == "ORI":
+            accx = float(values[2])
+            accy = float(values[3])
+            accz = float(values[4])
+            return (accx, accy, accz)
+
+        elif reply.sentence == "PNU":
+            # change the c/o/t and 0/1 responses of specMech
+            # to something more readable
+            if values[2] == "c":
+                pnus = "closed"
+            elif values[2] == "o":
+                pnus = "open"
+            else:
+                pnus = "transiting"
+
+            if values[4] == "c":
+                pnul = "closed"
+            elif values[4] == "o":
+                pnul = "open"
+            else:
+                pnul = "transiting"
+
+            if values[6] == "c":
+                pnur = "closed"
+            elif values[6] == "o":
+                pnur = "open"
+            else:
+                pnur = "transiting"
+
+            if values[8] == "0":
+                pnup = "off"
+            else:
+                pnup = "on"
+
+            return (pnus, pnul, pnur, pnup)
+
+        elif reply.sentence == "TIM":
+            tim = values[1]
+            stim = values[2]
+            btm = values[4]
+            return (btm, tim, stim)
+
+        elif reply.sentence == "VER":
+            ver = values[2]
+            return (ver,)
+
+        elif reply.sentence == "VAC":
+            red = float(values[2])
+            blue = float(values[4])
+            return (red, blue)
+
+        elif reply.sentence == "LN2":
+            valves = []
+            for valve_status in values[2]:
+                if valve_status.upper() == "C":
+                    valves.append("closed")
+                elif valve_status.upper() == "O":
+                    valves.append("open")
+                elif valve_status.upper() == "T":
+                    valves.append("timeout")
+                elif valve_status.upper() == "X":
+                    valves.append("disabled")
+                else:
+                    valves.append("?")
+
+            (
+                buffer_dewar_supply_status,
+                buffer_dewar_vent_status,
+                red_dewar_vent_status,
+                blue_dewar_vent_status,
+            ) = valves
+
+            time_next_fill = int(values[3])
+            max_valve_open_time = int(values[5])
+            fill_interval = int(values[7])
+            ln2_pressure = int(values[9])
+
+            if values[11].upper() == "C":
+                buffer_dewar_thermistor_status = "cold"
+            elif values[11].upper() == "H":
+                buffer_dewar_thermistor_status = "warm"
+            else:
+                buffer_dewar_thermistor_status = "?"
+
+            if values[13].upper() == "C":
+                red_dewar_thermistor_status = "cold"
+            elif values[13].upper() == "H":
+                red_dewar_thermistor_status = "warm"
+            else:
+                red_dewar_thermistor_status = "?"
+
+            if values[15].upper() == "C":
+                blue_dewar_thermistor_status = "cold"
+            elif values[15].upper() == "H":
+                blue_dewar_thermistor_status = "warm"
+            else:
+                blue_dewar_thermistor_status = "?"
+
+            return (
+                buffer_dewar_supply_status,
+                buffer_dewar_vent_status,
+                red_dewar_vent_status,
+                blue_dewar_vent_status,
+                time_next_fill,
+                max_valve_open_time,
+                fill_interval,
+                ln2_pressure,
+                buffer_dewar_thermistor_status,
+                red_dewar_thermistor_status,
+                blue_dewar_thermistor_status,
+            )
+
+        else:
+            raise SpecMechError(f"Invalid reply sentence {reply.sentence}.")
