@@ -317,6 +317,9 @@ async def move(
         else:
             final[:] += position
 
+    if numpy.any(final < 100) or numpy.any(final > 2900):
+        return command.fail("Commanded motor position is out of range.")
+
     move_time = numpy.max(numpy.abs(current - final)) / collimator_speed
 
     for mech_command in mech_commands:
