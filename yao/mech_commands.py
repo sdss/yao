@@ -14,6 +14,8 @@ import re
 from typing import TYPE_CHECKING
 
 import click
+import numpy
+import numpy.typing
 
 from archon.actor import parser
 
@@ -202,35 +204,135 @@ async def status(command: YaoCommand, controllers, stat: str | None = None):
     return command.finish()
 
 
-                if value[13].upper() == "C":
-                    red_dewar_thermistor_status = "cold"
-                elif value[13].upper() == "H":
-                    red_dewar_thermistor_status = "warm"
-                else:
-                    red_dewar_thermistor_status = "?"
+@mech.command()
+@click.argument("POSITION", type=int, required=False)
+@click.option(
+    "--motor",
+    type=click.Choice(["a", "b", "c"], case_sensitive=False),
+    help="Move only this motor.",
+)
+@click.option(
+    "--absolute",
+    is_flag=True,
+    help="Moves one motor to an absolute position.",
+)
+@click.option(
+    "--wait/--no-wait",
+    default=True,
+    help="Waits until the motor has .",
+)
+@click.option(
+    "--tolerance",
+    default=2.0,
+    type=float,
+    help="Collimator positioning tolerance.",
+)
+@click.option(
+    "--home",
+    is_flag=True,
+    help="Send the motors to their home positions.",
+)
+@click.option(
+    "--home-position",
+    default=1500.0,
+    type=int,
+    help="Absolute position for homing all the motors.",
+)
+async def collimator(
+    command: YaoCommand,
+    controllers,
+    position: int | None = None,
+    motor: str | None = None,
+    absolute: bool = False,
+    tolerance: float = 1.0,
+    wait: bool = True,
+    home: bool = False,
+    home_position: int = 1500,
+):
+    """Commands the collimator motors.
 
-                if value[15].upper() == "C":
-                    blue_dewar_thermistor_status = "cold"
-                elif value[15].upper() == "H":
-                    blue_dewar_thermistor_status = "warm"
-                else:
-                    blue_dewar_thermistor_status = "?"
+    Without flags moves are relative from the current position and move all
+    motors concurrently.
 
-                command.info(
-                    buffer_dewar_supply_status=buffer_dewar_supply_status,
-                    buffer_dewar_vent_status=buffer_dewar_vent_status,
-                    red_dewar_vent_status=red_dewar_vent_status,
-                    blue_dewar_vent_status=blue_dewar_vent_status,
-                    time_next_fill=time_next_fill,
-                    max_valve_open_time=max_valve_open_time,
-                    fill_interval=fill_interval,
-                    ln2_pressure=ln2_pressure,
-                    buffer_dewar_thermistor_status=buffer_dewar_thermistor_status,
-                    red_dewar_thermistor_status=red_dewar_thermistor_status,
-                    blue_dewar_thermistor_status=blue_dewar_thermistor_status,
-                )
+    """
 
-    return command.finish()
+    if home is False and position is None:
+        return command.fail("POSITION is required except with --home.")
+
+    current = numpy.array([0, 0, 0], dtype=numpy.int16)
+    try:
+        for ii, motor_ in enumerate(["a", "b", "c"]):
+            _, pos, vel, _ = await command.actor.spec_mech.get_stat(f"motor-{motor_}")
+            if vel != 0:
+                return command.fail(f"Motor {motor_} is moving.")
+            current[ii] = pos
+    except SpecMechError as err:
+        return command.fail(str(err))
+
+    mech_commands: list[str]
+
+    if home is True:
+        position = home_position
+        absolute = True
+
+    if position is None:
+        return command.fail("POSITION not defined.")
+
+    if motor is None:
+        if absolute is False:
+            mech_commands = [f"md{position}"]
+        else:
+            mech_commands = [
+                f"mA{position}",
+                f"mB{position}",
+                f"mC{position}",
+            ]
+    else:
+        if absolute:
+            mech_command = "m" + motor.upper()
+        else:
+            mech_command = "m" + motor.lower()
+        mech_commands = [mech_command + str(position)]
+
+    collimator_speed = 25  # mu/s
+
+    final = current.copy()
+
+    if motor is not None:
+        motor_index = ord(motor) - ord("a")
+        if absolute:
+            final[motor_index] = position
+        else:
+            final[motor_index] += position
+    else:
+        if absolute:
+            final[:] = position
+        else:
+            final[:] += position
+
+    move_time = numpy.max(numpy.abs(current - final)) / collimator_speed
+
+    for mech_command in mech_commands:
+        move_command = await command.actor.spec_mech.send_data(mech_command)
+        if not parse_reply(command, move_command):
+            return
+
+    if not wait:
+        return command.finish()
+
+    await asyncio.sleep(move_time + 2)
+
+    for ntry in [1, 2]:
+        new = await command.actor.spec_mech.get_stat("motors")
+        if numpy.allclose(new, final, atol=tolerance):
+            return command.finish(motor_positions=new)
+
+        command.warning(motor_positions=new)
+        if ntry == 1:
+            command.warning("Collimator not at final position. Waiting a bit longer.")
+            await asyncio.sleep(3)
+        else:
+            return command.fail("Collimator failed to reach commanded position.")
 
 
 @mech.command()
