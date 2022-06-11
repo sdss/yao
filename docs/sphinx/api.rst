@@ -1,15 +1,14 @@
 
 .. _api:
 
-yao Reference
-=========================
+API
+===
 
-.. _api-main:
+specMech
+--------
 
-Main
-----
-
-.. automodule:: yao.main
+.. automodule:: yao.mech_controller
    :members:
+   :exclude-members: ReplyCode
    :undoc-members:
    :show-inheritance:

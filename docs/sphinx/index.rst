@@ -13,19 +13,20 @@ Contents
 --------
 
 .. toctree::
-  :maxdepth: 2
+  :caption: Contents
+  :maxdepth: 3
 
-  What's new in yao? <CHANGELOG>
-  Introduction to yao <intro>
-
-
-Reference
----------
+  commands
+  api
 
 .. toctree::
-   :maxdepth: 1
+  :caption: Development
+  :maxdepth: 2
 
-   api
+  Changelog <changelog>
+  Archon Reference <https://sdss-archon.readthedocs.io/en/latest/>
+  GitHub Repository <https://github.com/sdss/lvmieb>
+  Issues  <https://github.com/sdss/lvmieb/issues>
 
 
 Indices and tables
