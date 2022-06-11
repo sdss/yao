@@ -1,15 +1,25 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "definitions": {},
-  "type": "object",
-  "properties": {
+  "definitions": {
     "motor": {
       "type": "array",
       "items": [
         { "type": "string" },
-        { "type": "string" },
-        { "type": "string" }
-      ]
+        { "type": "integer" },
+        { "type": "integer" },
+        { "type": "integer" }
+      ],
+      "additionalItems": false
+    }
+  },
+  "type": "object",
+  "properties": {
+    "motor_a": { "$ref": "#/definitions/motor" },
+    "motor_b": { "$ref": "#/definitions/motor" },
+    "motor_c": { "$ref": "#/definitions/motor" },
+    "motor_positions": {
+      "type": "array",
+      "items": { "type": "integer" }
     },
     "temperature0": { "type": "number" },
     "humidity0": { "type": "number" },

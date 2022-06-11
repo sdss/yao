@@ -29,6 +29,7 @@ STATS: dict[str, str] = {
     "version": "rV",
     "environment": "re",
     "vacuum": "rv",
+    "motors": "rd",
     "motor-a": "ra",
     "motor-b": "rb",
     "motor-c": "rc",
@@ -380,19 +381,23 @@ class MechController:
         values = reply.data[0]
 
         if reply.sentence == "MTR":
-            mtr = values[2]
-            mtrPosition = values[3]
-            mtrPositionUnits = values[4]
-            mtrSpeed = values[5]
-            mtrSpeedUnits = values[6]
-            mtrCurrent = values[7]
-            mtrCurrentUnits = values[8]
-            return (
-                mtr,
-                f"{mtrPosition} {mtrPositionUnits}",
-                f"{mtrSpeed} {mtrSpeedUnits}",
-                f"{mtrCurrent} {mtrCurrentUnits})",
-            )
+            if stat.startswith("motor-"):
+                # Only one reply.
+                mtr = values[2]
+                mtrPosition = int(values[3])
+                mtrSpeed = int(values[5])
+                mtrCurrent = int(values[7])
+                return (mtr, mtrPosition, mtrSpeed, mtrCurrent)
+            elif stat == "motors":
+                # This is the only case in which we have multiple replies.
+                # Return only the positions as floats.
+                positions = []
+                for d in reply.data:
+                    positions.append(int(d[3]))
+                return tuple(positions)
+
+            else:
+                raise SpecMechError("Invalid stat for MTR reply.")
 
         elif reply.sentence == "ENV":
             env0T = float(values[2])

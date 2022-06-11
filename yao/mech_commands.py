@@ -102,6 +102,22 @@ def mech(*args):
     pass
 
 
+# Values to output if a stat fails.
+FAILED_STAT_REPLIES = {
+    "nitrogen": ["?", "?", "?", "?", -999, -999, -999, -999, "?", "?", "?", "?"],
+    "motor-a": ["a", "?", "?", "?"],
+    "motor-b": ["b", "?", "?", "?"],
+    "motor-c": ["c", "?", "?", "?"],
+    "motors": [-999, -999, -999],
+    "environment": [-999.0] * 6,
+    "orientation": [-999.0] * 3,
+    "pneumatics": ["?"] * 4,
+    "time": ["?"] * 3,
+    "version": ["?"],
+    "vacuum": [-999.0, -999.0],
+}
+
+
 @mech.command()
 @click.argument("STAT", type=click.Choice(list(STATS)), required=False)
 async def status(command: YaoCommand, controllers, stat: str | None = None):
@@ -114,7 +130,7 @@ async def status(command: YaoCommand, controllers, stat: str | None = None):
 
     for this_stat in process_stats:
 
-        if stat not in STATS:
+        if this_stat not in STATS:
             return command.fail(f"Invalid specMech status command {this_stat!r}.")
 
         mech = command.actor.spec_mech
@@ -123,10 +139,16 @@ async def status(command: YaoCommand, controllers, stat: str | None = None):
             values = await mech.get_stat(this_stat)
         except SpecMechError as err:
             command.error(str(err))
-            continue
+            if this_stat in FAILED_STAT_REPLIES:
+                values = FAILED_STAT_REPLIES[this_stat]
+            else:
+                continue
 
         if this_stat.startswith("motor-"):
-            command.info(motor=values)
+            command.info(message={this_stat.replace("-", "_"): values})
+
+        elif this_stat == "motors":
+            command.info(motor_positions=values)
 
         elif this_stat == "environment":
             command.info(
