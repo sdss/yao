@@ -245,7 +245,7 @@ async def status(command: YaoCommand, controllers, stat: str | None = None):
     type=int,
     help="Absolute position for homing all the motors.",
 )
-async def collimator(
+async def move(
     command: YaoCommand,
     controllers,
     position: int | None = None,
