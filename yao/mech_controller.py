@@ -205,10 +205,8 @@ class SpecMechReply:
             if sentence == b"ERR":
                 self.code = ReplyCode.ERR_IN_REPLY
 
-            self.sentence = sentence.decode()
-
             # The data includes the sentence and the timestamp.
-            self.data.append([f"S2{self.sentence}"] + data_pack.decode().split(","))
+            self.data.append([sentence.decode()] + data_pack.decode().split(","))
 
 
 class MechController:
@@ -383,7 +381,7 @@ class MechController:
 
         values = reply.data[0]
 
-        if reply.sentence == "MTR":
+        if values[0] == "MTR":
             if stat.startswith("motor-"):
                 # Only one reply.
                 mtr = values[2]
@@ -402,7 +400,7 @@ class MechController:
             else:
                 raise SpecMechError("Invalid stat for MTR reply.")
 
-        elif reply.sentence == "ENV":
+        elif values[0] == "ENV":
             env0T = float(values[2])
             env0H = float(values[4])
             env1T = float(values[6])
@@ -412,13 +410,13 @@ class MechController:
             specMechT = float(values[14])
             return (env0T, env0H, env1T, env1H, env2T, env2H, specMechT)
 
-        elif reply.sentence == "ORI":
+        elif values[0] == "ORI":
             accx = float(values[2])
             accy = float(values[3])
             accz = float(values[4])
             return (accx, accy, accz)
 
-        elif reply.sentence == "PNU":
+        elif values[0] == "PNU":
             # change the c/o/t and 0/1 responses of specMech
             # to something more readable
             if values[2] == "c":
@@ -449,22 +447,22 @@ class MechController:
 
             return (pnus, pnul, pnur, pnup)
 
-        elif reply.sentence == "TIM":
+        elif values[0] == "TIM":
             tim = values[1]
             stim = values[2]
             btm = values[4]
             return (btm, tim, stim)
 
-        elif reply.sentence == "VER":
+        elif values[0] == "VER":
             ver = values[2]
             return (ver,)
 
-        elif reply.sentence == "VAC":
+        elif values[0] == "VAC":
             red = float(values[2])
             blue = float(values[4])
             return (red, blue)
 
-        elif reply.sentence == "LN2":
+        elif values[0] == "LN2":
             valves = []
             for valve_status in values[2]:
                 if valve_status.upper() == "C":
@@ -531,4 +529,4 @@ class MechController:
             return (fan, volts)
 
         else:
-            raise SpecMechError(f"Invalid reply sentence {reply.sentence}.")
+            raise SpecMechError(f"Invalid reply sentence {values[0]}.")
