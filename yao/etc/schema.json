@@ -4,10 +4,11 @@
     "motor": {
       "type": "array",
       "items": [
+        { "type": "integer" },
+        { "type": "integer" },
+        { "type": "integer" },
         { "type": "string" },
-        { "type": "integer" },
-        { "type": "integer" },
-        { "type": "integer" }
+        { "type": "boolean" }
       ],
       "additionalItems": false
     }

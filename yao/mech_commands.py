@@ -148,7 +148,7 @@ async def status(command: YaoCommand, controllers, stat: str | None = None):
                 continue
 
         if this_stat.startswith("motor-"):
-            command.info(message={this_stat.replace("-", "_"): values})
+            command.info(message={this_stat.replace("-", "_"): values[1:]})
 
         elif this_stat == "motors":
             command.info(motor_positions=values)

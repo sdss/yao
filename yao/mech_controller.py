@@ -388,7 +388,9 @@ class MechController:
                 mtrPosition = int(values[3])
                 mtrSpeed = int(values[5])
                 mtrCurrent = int(values[7])
-                return (mtr, mtrPosition, mtrSpeed, mtrCurrent)
+                mtrDirection = values[9]
+                mtrLimit = True if values[11] == "Y" else False
+                return (mtr, mtrPosition, mtrSpeed, mtrCurrent, mtrDirection, mtrLimit)
             elif stat == "motors":
                 # This is the only case in which we have multiple replies.
                 # Return only the positions as floats.
