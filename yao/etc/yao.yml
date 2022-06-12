@@ -42,6 +42,11 @@ header:
 specMech:
   address: 10.7.45.35
   port: 23
+  motors:
+    minP: 85000
+    maxP: 800000
+    min_microns: 300
+    max_microns: 2800
 
 actor:
   name: yao

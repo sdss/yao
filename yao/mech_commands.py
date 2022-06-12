@@ -270,12 +270,34 @@ async def move(
         return command.fail("POSITION is required except with --center.")
 
     current = numpy.array([0, 0, 0], dtype=numpy.int16)
+
+    minP_expected = command.actor.config["specMech"]["motors"]["minP"]
+    maxP_expected = command.actor.config["specMech"]["motors"]["maxP"]
+
     try:
         for ii, motor_ in enumerate(["a", "b", "c"]):
-            _, pos, vel, _ = await command.actor.spec_mech.get_stat(f"motor-{motor_}")
+            data = await command.actor.spec_mech.get_stat(f"motor-{motor_}")
+
+            _, pos, vel, _, _, limit = data
             if vel != 0:
-                return command.fail(f"Motor {motor_} is moving.")
+                raise SpecMechError(f"Motor {motor_} is moving.")
+            if limit is True:
+                raise SpecMechError(f"A limit switch was triggered for motor {motor_}.")
             current[ii] = pos
+
+        for ii, motor_ in enumerate(["a", "b", "c"]):
+            reply = await command.actor.spec_mech.send_data(f"r{motor_.upper()}")
+            check_reply(reply)
+
+            dmm = reply.data[3]
+            if dmm[0] != "DMM":
+                raise SpecMechError("Cannot retrieve DMM status.")
+
+            minP = int(dmm[5])
+            maxP = int(dmm[7])
+            if minP != minP_expected or maxP != maxP_expected:
+                raise SpecMechError("Min/max encoder positions out of range.")
+
     except SpecMechError as err:
         return command.fail(str(err))
 
@@ -320,7 +342,9 @@ async def move(
         else:
             final[:] += position
 
-    if numpy.any(final < 100) or numpy.any(final > 2900):
+    min_range = command.actor.config["specMech"]["motors"]["min_microns"]
+    max_range = command.actor.config["specMech"]["motors"]["max_microns"]
+    if numpy.any(final < min_range) or numpy.any(final > max_range):
         return command.fail("Commanded motor position is out of range.")
 
     move_time = numpy.max(numpy.abs(current - final)) / collimator_speed
