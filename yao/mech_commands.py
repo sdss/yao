@@ -235,12 +235,12 @@ async def status(command: YaoCommand, controllers, stat: str | None = None):
     help="Collimator positioning tolerance.",
 )
 @click.option(
-    "--home",
+    "--center",
     is_flag=True,
     help="Send the motors to their home positions.",
 )
 @click.option(
-    "--home-position",
+    "--center-position",
     default=1500.0,
     type=int,
     help="Absolute position for homing all the motors.",
@@ -253,8 +253,8 @@ async def move(
     absolute: bool = False,
     tolerance: float = 1.0,
     wait: bool = True,
-    home: bool = False,
-    home_position: int = 1500,
+    center: bool = False,
+    center_position: int = 1500,
 ):
     """Commands the collimator motors.
 
@@ -263,8 +263,11 @@ async def move(
 
     """
 
-    if home is False and position is None:
-        return command.fail("POSITION is required except with --home.")
+    if absolute is True and motor is None:
+        return command.fail("--absolute requires specifying --motor.")
+
+    if center is False and position is None:
+        return command.fail("POSITION is required except with --center.")
 
     current = numpy.array([0, 0, 0], dtype=numpy.int16)
     try:
@@ -278,8 +281,8 @@ async def move(
 
     mech_commands: list[str]
 
-    if home is True:
-        position = home_position
+    if center is True:
+        position = center_position
         absolute = True
 
     if position is None:
