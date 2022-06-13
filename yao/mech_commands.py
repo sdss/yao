@@ -190,7 +190,7 @@ async def status(command: YaoCommand, controllers, stat: str | None = None):
         elif this_stat == "specmech":
             command.info(
                 fan=values[0],
-                fan_volts=values[1],
+                power_supply_volts=values[1],
             )
 
         elif this_stat == "nitrogen":

@@ -64,7 +64,7 @@
     "red_dewar_thermistor_status": { "enum": ["cold", "warm", "?"] },
     "blue_dewar_thermistor_status": { "enum": ["cold", "warm", "?"] },
     "fan": { "enum": ["on", "off", "?"] },
-    "fan_volts": { "type": "number" }
+    "power_supply_volts": { "type": "number" }
   },
   "additionalProperties": false
 }
