@@ -107,9 +107,9 @@ def mech(*args):
 # Values to output if a stat fails.
 FAILED_STAT_REPLIES = {
     "nitrogen": ["?", "?", "?", "?", -999, -999, -999, -999, "?", "?", "?", "?"],
-    "motor-a": ["a", "?", "?", "?"],
-    "motor-b": ["b", "?", "?", "?"],
-    "motor-c": ["c", "?", "?", "?"],
+    "motor-a": ["a", -999, -999, -999, False],
+    "motor-b": [-999, -999, -999, False],
+    "motor-c": [-999, -999, -999, False],
     "motors": [-999, -999, -999],
     "environment": [-999.0] * 6,
     "orientation": [-999.0] * 3,
@@ -148,19 +148,26 @@ async def status(command: YaoCommand, controllers, stat: str | None = None):
                 continue
 
         if this_stat.startswith("motor-"):
-            command.info(message={this_stat.replace("-", "_"): values[1:]})
+            pos, vel, current, _, limit = values[1:]
+            command.info(
+                message={this_stat.replace("-", "_"): [pos, vel, current, limit]}
+            )
+
+            if limit is True:
+                motor = this_stat[-1].upper()
+                command.warning(f"Motor {motor}: limit switch has been triggered!")
 
         elif this_stat == "motors":
             command.info(motor_positions=values)
 
         elif this_stat == "environment":
             command.info(
-                temperature0=values[0],
-                humidity0=values[1],
-                temperature1=values[2],
-                humidity1=values[3],
-                temperature2=values[4],
-                humidity2=values[5],
+                temperature_blue=values[0],
+                humidity_blue=values[1],
+                temperature_red=values[2],
+                humidity_red=values[3],
+                temperature_collimator=values[4],
+                humidity_collimator=values[5],
                 specMech_temp=values[6],
             )
 
@@ -183,8 +190,8 @@ async def status(command: YaoCommand, controllers, stat: str | None = None):
 
         elif this_stat == "vacuum":
             command.info(
-                vacuum_pump_red_dewar=values[0],
-                vacuum_pump_blue_dewar=values[1],
+                vacuum_red_log10_pa=values[0],
+                vacuum_blue_log10_pa=values[1],
             )
 
         elif this_stat == "specmech":

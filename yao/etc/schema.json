@@ -7,7 +7,6 @@
         { "type": "integer" },
         { "type": "integer" },
         { "type": "integer" },
-        { "type": "string" },
         { "type": "boolean" }
       ],
       "additionalItems": false
@@ -22,12 +21,12 @@
       "type": "array",
       "items": { "type": "integer" }
     },
-    "temperature0": { "type": "number" },
-    "humidity0": { "type": "number" },
-    "temperature1": { "type": "number" },
-    "humidity1": { "type": "number" },
-    "temperature2": { "type": "number" },
-    "humidity2": { "type": "number" },
+    "temperature_blue": { "type": "number" },
+    "humidity_blue": { "type": "number" },
+    "temperature_red": { "type": "number" },
+    "humidity_red": { "type": "number" },
+    "temperature_collimator": { "type": "number" },
+    "humidity_collimator": { "type": "number" },
     "specMech_temp": { "type": "number" },
     "accelerometer": {
       "type": "array",
@@ -41,8 +40,8 @@
     "clock_time": { "type": "string" },
     "set_time": { "type": "string" },
     "specMech_version": { "type": "string" },
-    "vacuum_pump_red_dewar": { "type": "number" },
-    "vacuum_pump_blue_dewar": { "type": "number" },
+    "vacuum_red_log10_pa": { "type": "number" },
+    "vacuum_blue_log10_pa": { "type": "number" },
     "mech_raw_reply": { "type": "string" },
     "buffer_dewar_supply_status": {
       "enum": ["open", "closed", "timeout", "disabled", "?"]
