@@ -532,3 +532,19 @@ class MechController:
 
         else:
             raise SpecMechError(f"Invalid reply sentence {values[0]}.")
+
+    async def pneumatic_status(self, mechanism: str) -> str:
+        """Returns the open/closed status of a mechanism."""
+
+        mechanism = mechanism.lower()
+        if mechanism not in ["shutter", "left", "right"]:
+            raise SpecMechError(f"Invalid mechanism {mechanism!r}.")
+
+        status = await self.get_stat("pneumatics")
+
+        if mechanism == "shutter":
+            return status[0]
+        elif mechanism == "left":
+            return status[1]
+        else:
+            return status[2]
