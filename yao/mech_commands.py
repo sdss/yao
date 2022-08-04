@@ -55,7 +55,9 @@ def parse_reply(command: YaoCommand, reply: SpecMechReply, fail: bool = True):
 
 
 async def check_pneumatics_transition(
-    command: YaoCommand, mechanisms: tuple[str, ...], destination: str
+    command: YaoCommand,
+    mechanisms: tuple[str, ...],
+    destination: str,
 ):
     """Checks that all the mechanisms have arrived to their desired position."""
 
@@ -75,7 +77,7 @@ async def check_pneumatics_transition(
                 mech_position = status.data[0][2]
             elif mech == "left":
                 mech_position = status.data[0][4]
-            elif mech == "shutter":
+            elif mech == "right":
                 mech_position = status.data[0][6]
             else:
                 continue
