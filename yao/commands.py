@@ -79,7 +79,7 @@ async def hartmann(
             if status_side == "transitioning":
                 raise SpecMechError(f"Hartmann {ss} door is transitioning.")
             elif status_side == "open":
-                if await run_subcmd(command, f"close {ss}"):
+                if await run_subcmd(command, f"mech close {ss}"):
                     return
 
             # Check that the side door is closed or close it.
@@ -87,7 +87,7 @@ async def hartmann(
             if status_other_side == "transitioning":
                 raise SpecMechError(f"Hartmann {other_side} door is transitioning.")
             elif status_other_side == "open":
-                if await run_subcmd(command, f"open {other_side}"):
+                if await run_subcmd(command, f"mech open {other_side}"):
                     return
 
             expose_cmd: str = "expose --arc"
