@@ -86,6 +86,7 @@ async def check_pneumatics_transition(
                 reached = False
 
         if reached is True:
+            command.info(message={mech: destination for mech in mechanisms})
             return True
 
         if ii == 1:
@@ -95,6 +96,7 @@ async def check_pneumatics_transition(
             )
         else:
             command.fail("Pneumatics did not reach the desired position.")
+            await command.send_command("yao", "mech status pneumatics")
 
     return False
 
