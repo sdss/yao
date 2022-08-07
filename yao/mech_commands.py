@@ -54,53 +54,6 @@ def parse_reply(command: YaoCommand, reply: SpecMechReply, fail: bool = True):
     return True
 
 
-async def check_pneumatics_transition(
-    command: YaoCommand,
-    mechanisms: tuple[str, ...],
-    destination: str,
-):
-    """Checks that all the mechanisms have arrived to their desired position."""
-
-    # Try twice, then fail.
-    for ii in [1, 2]:
-        await asyncio.sleep(command.actor.config["timeouts"]["pneumatics"])
-
-        reached = True
-
-        status = await command.actor.spec_mech.send_data("rp")
-        if not parse_reply(command, status, fail=False):
-            command.fail("Failed checking the status of the pneumatics after a move.")
-            return False
-
-        for mech in mechanisms:
-            if mech == "shutter":
-                mech_position = status.data[0][2]
-            elif mech == "left":
-                mech_position = status.data[0][4]
-            elif mech == "right":
-                mech_position = status.data[0][6]
-            else:
-                continue
-
-            if mech_position != destination[0].lower():
-                reached = False
-
-        if reached is True:
-            command.info(message={mech: destination for mech in mechanisms})
-            return True
-
-        if ii == 1:
-            command.warning(
-                "Pneumatics did not reach the desired position. "
-                "Waiting a bit longer ..."
-            )
-        else:
-            command.fail("Pneumatics did not reach the desired position.")
-            await command.send_command("yao", "mech status pneumatics")
-
-    return False
-
-
 @parser.group()
 def mech(*args):
     """Interface to the specMech controller."""
@@ -440,25 +393,18 @@ async def openMech(command: YaoCommand, controller, mechanisms: tuple[str, ...])
     jobs = []
 
     for mechanism in mechanisms:
-        if mechanism == "left":
-            dataTemp = "ol"
-        elif mechanism == "right":
-            dataTemp = "or"
-        elif mechanism == "shutter":
-            dataTemp = "os"
-        else:
-            return command.fail(f"Invalid mechanism {mechanism!r}.")
+        jobs.append(
+            command.actor.spec_mech.pneumatic_move(
+                mechanism,
+                open=True,
+                command=command,
+            )
+        )
 
-        jobs.append(command.actor.spec_mech.send_data(dataTemp))
-
-    replies = await asyncio.gather(*jobs)
-
-    for reply in replies:
-        if not parse_reply(command, reply):
-            return
-
-    if not (await check_pneumatics_transition(command, mechanisms, "open")):
-        return
+    results = await asyncio.gather(*jobs, return_exceptions=True)
+    for result in results:
+        if isinstance(result, SpecMechError):
+            return command.fail(str(result))
 
     return command.finish()
 
@@ -476,25 +422,18 @@ async def closeMech(command: YaoCommand, controller, mechanisms: tuple[str, ...]
     jobs = []
 
     for mechanism in mechanisms:
-        if mechanism == "left":
-            dataTemp = "cl"
-        elif mechanism == "right":
-            dataTemp = "cr"
-        elif mechanism == "shutter":
-            dataTemp = "cs"
-        else:
-            return command.fail(f"Invalid mechanism {mechanism!r}.")
+        jobs.append(
+            command.actor.spec_mech.pneumatic_move(
+                mechanism,
+                open=False,
+                command=command,
+            )
+        )
 
-        jobs.append(command.actor.spec_mech.send_data(dataTemp))
-
-    replies = await asyncio.gather(*jobs)
-
-    for reply in replies:
-        if not parse_reply(command, reply):
-            return
-
-    if not (await check_pneumatics_transition(command, mechanisms, "close")):
-        return
+    results = await asyncio.gather(*jobs, return_exceptions=True)
+    for result in results:
+        if isinstance(result, SpecMechError):
+            return command.fail(str(result))
 
     return command.finish()
 

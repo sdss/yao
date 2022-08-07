@@ -17,6 +17,9 @@ from typing import Any
 
 from sdsstools.logger import SDSSLogger
 
+from yao import config
+
+from .actor import YaoCommand
 from .exceptions import SpecMechError, YaoUserWarning
 
 
@@ -532,6 +535,87 @@ class MechController:
 
         else:
             raise SpecMechError(f"Invalid reply sentence {values[0]}.")
+
+    async def pneumatic_move(
+        self,
+        mechanism: str,
+        open: bool = True,
+        command: YaoCommand | None = None,
+    ):
+        """Opens/closes a pneumatic mechanism.
+
+        Parameters
+        ----------
+        mechanism
+            Either ``shutter``, ``left``, or ``right``.
+        open
+            If `True`, opens the mechanism, otherwise closes it.
+        command
+            An actor command for outputs.
+
+        """
+
+        if mechanism == "left":
+            spec_command = "ol" if open else "cl"
+        elif mechanism == "right":
+            spec_command = "or" if open else "cr"
+        elif mechanism == "shutter":
+            spec_command = "os" if open else "cs"
+        else:
+            raise SpecMechError(f"Invalid mechanism {mechanism!r}.")
+
+        reply = await self.send_data(spec_command)
+        check_reply(reply)
+
+        # Check that all the mechanisms have arrived to their desired position.
+        # Try twice, then fail.
+
+        for ii in [1, 2]:
+
+            await asyncio.sleep(config["timeouts"]["pneumatics"])
+
+            reached = True
+
+            status = await self.send_data("rp")
+            try:
+                check_reply(status)
+            except SpecMechError as err:
+                raise SpecMechError(
+                    "Failed checking the status of the "
+                    f"pneumatics after a move: {err}"
+                )
+
+            if mechanism == "shutter":
+                mech_position = status.data[0][2]
+            elif mechanism == "left":
+                mech_position = status.data[0][4]
+            elif mechanism == "right":
+                mech_position = status.data[0][6]
+            else:
+                continue
+
+            destination = "open" if open else "closed"
+            if mech_position != destination[0]:
+                reached = False
+
+            if reached is True:
+                if command:
+                    command.info(message={mechanism: destination})
+                return True
+
+            if ii == 1:
+                if command:
+                    command.warning(
+                        "Pneumatics did not reach the desired position. "
+                        "Waiting a bit longer ..."
+                    )
+            else:
+                if command:
+                    await command.send_command("yao", "mech status pneumatics")
+                raise SpecMechError("Pneumatics did not reach the desired position.")
+
+        # We should never get here.
+        raise SpecMechError
 
     async def pneumatic_status(self, mechanism: str) -> str:
         """Returns the open/closed status of a mechanism."""
