@@ -13,9 +13,26 @@ from astropy.time import Time
 from archon.actor.delegate import ExposureDelegate
 from archon.controller import ArchonController
 
+from .exceptions import SpecMechError
+
 
 class YaoDelegate(ExposureDelegate):
     """Exposure delegate for BOSS."""
+
+    async def shutter(self, open: bool = False) -> bool:
+        """Open/close the shutter."""
+
+        try:
+            self.command.actor.spec_mech.pneumatic_move(
+                "shutter",
+                open=open,
+                command=self.command,
+            )
+        except SpecMechError as err:
+            self.command.error(f"Failed moving shutter: {err}")
+            return False
+
+        return True
 
     async def post_process(
         self,
