@@ -603,7 +603,10 @@ class MechController:
 
             if reached is True:
                 if command:
-                    command.info(message={mechanism: destination})
+                    mech_key = mechanism
+                    if mechanism in ["left", "right"]:
+                        mech_key = "hartmann_" + mech_key
+                    command.info(message={mech_key: destination})
                 return True
 
             if ii == 1:
