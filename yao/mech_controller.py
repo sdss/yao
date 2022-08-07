@@ -13,14 +13,17 @@ import enum
 import re
 import warnings
 
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from sdsstools.logger import SDSSLogger
 
 from yao import config
 
-from .actor import YaoCommand
 from .exceptions import SpecMechError, YaoUserWarning
+
+
+if TYPE_CHECKING:
+    from .actor import YaoCommand
 
 
 __all__ = ["MechController", "ReplyCode", "SpecMechReply", "STATS", "check_reply"]
