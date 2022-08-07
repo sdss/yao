@@ -41,6 +41,8 @@ class YaoActor(ArchonBaseActor, LegacyActor):
 
         super().__init__(*args, schema=schema, **kwargs)
 
+        self.version = __version__
+
         # TODO: this assumes one single mech controller, not one per spectrograph,
         # but in practice for now that's fine.
         self.spec_mech = MechController(
