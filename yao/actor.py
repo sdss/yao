@@ -19,7 +19,7 @@ from archon import log as archon_log
 from archon.actor.actor import ArchonBaseActor
 from archon.actor.tools import get_schema
 
-from yao import config
+from yao import __version__, config
 from yao.commands import parser
 from yao.delegate import YaoDelegate
 from yao.mech_controller import MechController
@@ -62,6 +62,9 @@ class YaoActor(ArchonBaseActor, LegacyActor):
             await self.spec_mech.start()
         except Exception as err:
             raise ConnectionError(f"Failed connecting to mech controller: {err}")
+
+        self.timed_commands.clear()
+        self.timed_commands.add_command("mech status", delay=20)
 
         return await super().start()
 
