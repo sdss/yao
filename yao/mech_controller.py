@@ -264,6 +264,14 @@ class MechController:
             self.specMechPort,
         )
 
+    def is_connected(self):
+        """Checks if we are connected to the specMech."""
+
+        if not self.writer:
+            return False
+
+        return not self.writer.is_closing()
+
     async def send_data(self, command: str, timeout: float = 1):
         """Sends the given string to the specMech and then awaits a response.
 

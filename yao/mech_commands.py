@@ -32,6 +32,23 @@ if TYPE_CHECKING:
 __all__ = ["mech"]
 
 
+def check_controller(command: YaoCommand) -> bool:
+    """Performs sanity check in the controller.
+
+    Outputs error messages if a problem is found. Return `False` if the controller
+    is not in a valid state.
+
+    """
+
+    mech = command.actor.spec_mech
+
+    if not mech.is_connected():
+        command.fail(error="specMech controller not connected.")
+        return False
+
+    return True
+
+
 def parse_reply(command: YaoCommand, reply: SpecMechReply, fail: bool = True):
     """Parses a reply from the mech controller.
 
@@ -82,6 +99,9 @@ FAILED_STAT_REPLIES = {
 @click.argument("STAT", type=click.Choice(list(STATS)), required=False)
 async def status(command: YaoCommand, controllers, stat: str | None = None):
     """Queries specMech for all status responses."""
+
+    if not check_controller(command):
+        return
 
     if stat is None:
         process_stats = list(STATS)
@@ -227,6 +247,9 @@ async def move(
 
     """
 
+    if not check_controller(command):
+        return
+
     if absolute is True and motor is None:
         return command.fail("--absolute requires specifying --motor.")
 
@@ -340,6 +363,9 @@ async def move(
 async def ack(command: YaoCommand, controllers):
     """Acknowledges the specMech has rebooted and informs the user."""
 
+    if not check_controller(command):
+        return
+
     reply = await command.actor.spec_mech.send_data("!")
 
     if not parse_reply(command, reply):
@@ -356,6 +382,9 @@ async def ack(command: YaoCommand, controllers):
 async def talk(command: YaoCommand, controllers, data: str):
     """Send data string directly as-is to the specMech."""
 
+    if not check_controller(command):
+        return
+
     reply = await command.actor.spec_mech.send_data(data)
 
     # Remove telnet negotiations from raw string.
@@ -370,6 +399,9 @@ async def talk(command: YaoCommand, controllers, data: str):
 @click.argument("TIME", type=str)
 async def set_time(command: YaoCommand, controller, time: str):
     """Set the clock time of the specMech."""
+
+    if not check_controller(command):
+        return
 
     dataTemp = f"st{time}"
     reply = await command.actor.spec_mech.send_data(dataTemp)
@@ -389,6 +421,9 @@ async def set_time(command: YaoCommand, controller, time: str):
 )
 async def openMech(command: YaoCommand, controller, mechanisms: tuple[str, ...]):
     """Opens left or right Hartmann doors, or the shutter."""
+
+    if not check_controller(command):
+        return
 
     jobs = []
 
@@ -419,6 +454,9 @@ async def openMech(command: YaoCommand, controller, mechanisms: tuple[str, ...])
 async def closeMech(command: YaoCommand, controller, mechanisms: tuple[str, ...]):
     """Closes left or right Hartmann doors, or the shutter."""
 
+    if not check_controller(command):
+        return
+
     jobs = []
 
     for mechanism in mechanisms:
@@ -441,6 +479,9 @@ async def closeMech(command: YaoCommand, controller, mechanisms: tuple[str, ...]
 @mech.command()
 async def reboot(command: YaoCommand, controller):
     """Reboots the controller. A reconnect and acknowledge are needed afterewards."""
+
+    if not check_controller(command):
+        return
 
     dataTemp = "R"
 
@@ -485,6 +526,9 @@ async def disconnect(command: YaoCommand, controller):
 @click.argument("MODE", type=click.Choice(["on", "off"], case_sensitive=False))
 async def fan(command: YaoCommand, controller, mode: str):
     """Turns the speMech fan on/off."""
+
+    if not check_controller(command):
+        return
 
     if mode == "on":
         mech_command = "sf+"
