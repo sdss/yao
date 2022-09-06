@@ -499,7 +499,10 @@ async def reboot(command: YaoCommand, controller):
 async def reconnect(command: YaoCommand, controller):
     """Recreates the connection to the specMech."""
 
-    await command.actor.spec_mech.close()
+    try:
+        await command.actor.spec_mech.close()
+    except OSError:
+        pass
 
     await asyncio.sleep(2)
 

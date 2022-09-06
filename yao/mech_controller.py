@@ -259,10 +259,8 @@ class MechController:
         loop = asyncio.get_running_loop()
         loop.set_exception_handler(self.log.asyncio_exception_handler)
 
-        self.reader, self.writer = await asyncio.open_connection(
-            self.spechMechAddress,
-            self.specMechPort,
-        )
+        connect = asyncio.open_connection(self.spechMechAddress, self.specMechPort)
+        self.reader, self.writer = await asyncio.wait_for(connect, timeout=3)
 
     def is_connected(self):
         """Checks if we are connected to the specMech."""

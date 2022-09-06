@@ -60,11 +60,20 @@ class YaoActor(ArchonBaseActor, LegacyActor):
 
         try:
             await self.spec_mech.start()
+        except asyncio.TimeoutError:
+            warnings.warn(
+                "Failed connecting to mech controller: timed out.",
+                YaoUserWarning,
+            )
         except Exception as err:
-            raise ConnectionError(f"Failed connecting to mech controller: {err}")
+            warnings.warn(
+                f"Failed connecting to mech controller: {err}",
+                YaoUserWarning,
+            )
 
         self.timed_commands.clear()
         self.timed_commands.add_command("mech status", delay=20)
+        self.timed_commands.add_command("status", delay=30)
 
         return await super().start()
 
