@@ -81,11 +81,11 @@ def mech(*args):
 # Values to output if a stat fails.
 FAILED_STAT_REPLIES = {
     "nitrogen": ["?", "?", "?", "?", -999, -999, -999, -999, "?", "?", "?", "?"],
-    "motor-a": ["a", -999, -999, -999, False],
-    "motor-b": [-999, -999, -999, False],
-    "motor-c": [-999, -999, -999, False],
+    "motor-a": ["a", -999, -999, -999, -999, False],
+    "motor-b": ["b", -999, -999, -999, -999, False],
+    "motor-c": ["c", -999, -999, -999, -999, False],
     "motors": [-999, -999, -999],
-    "environment": [-999.0] * 6,
+    "environment": [-999.0] * 7,
     "orientation": [-999.0] * 3,
     "pneumatics": ["?"] * 4,
     "time": ["?"] * 3,
