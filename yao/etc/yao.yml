@@ -1,4 +1,6 @@
 ---
+enabled_controllers: [sp2]
+
 controllers:
   sp2:
     host: 192.168.1.2
