@@ -42,6 +42,10 @@ class YaoActor(ArchonBaseActor, LegacyActor):
 
         schema = self.merge_schemas(kwargs.pop("schema", None))
 
+        # We are going to append "spX_" to every keyword that contains the
+        # controller sub-keyword, so for now let's accept additionalProperties.
+        schema["additionalProperties"] = True
+
         super().__init__(*args, schema=schema, **kwargs)
 
         self.version = __version__
