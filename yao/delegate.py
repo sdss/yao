@@ -22,6 +22,13 @@ class YaoDelegate(ExposureDelegate):
     async def shutter(self, open: bool = False) -> bool:
         """Open/close the shutter."""
 
+        expose_data = self.expose_data
+        assert expose_data
+
+        # TODO: this should be part of the ExposureDelegate.
+        if expose_data.exposure_time == 0 or expose_data.flavour in ["bias", "dark"]:
+            return True
+
         try:
             await self.command.actor.spec_mech.pneumatic_move(
                 "shutter",
