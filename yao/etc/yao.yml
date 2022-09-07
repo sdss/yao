@@ -56,6 +56,9 @@ actor:
   port: 19999
   tron_host: sdss5-hub
   tron_port: 6093
+  models:
+    - jaeger
+    - lcotcc
   schema: etc/schema.json
   log_dir: /data/logs/yao
 

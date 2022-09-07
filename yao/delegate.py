@@ -6,14 +6,26 @@
 # @Filename: delegate.py
 # @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
 
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Any
+
 import numpy
 from astropy.io import fits
 from astropy.time import Time
+from clu.legacy.types.pvt import PVT
 
 from archon.actor.delegate import ExposureDelegate
 from archon.controller import ArchonController
 
 from .exceptions import SpecMechError
+
+
+if TYPE_CHECKING:
+    from yao.actor import YaoActor
+
+
+# TODO: LCOTCC cards are copied from flicamera. Should reunify code.
 
 
 class YaoDelegate(ExposureDelegate):
@@ -125,4 +137,198 @@ class YaoDelegate(ExposureDelegate):
             reqtime_card = ("REQTIME", header["EXPTIME"], "Requested exposure time")
             header.insert("EXPTIME", reqtime_card)
 
+            # Instrument cards
+            header.append(("CARTID", "FPS-S", "Instrument ID"))
+
+            fps_cards = [
+                (
+                    "CONFID",
+                    get_keyword(
+                        self.actor,
+                        "jaeger",
+                        "configuration_loaded",
+                        idx=0,
+                        cnv=int,
+                    ),
+                    "Configuration ID",
+                ),
+                (
+                    "DESIGNID",
+                    get_keyword(
+                        self.actor,
+                        "jaeger",
+                        "configuration_loaded",
+                        idx=1,
+                        cnv=int,
+                    ),
+                    "Design ID associated with CONFIGID",
+                ),
+                (
+                    "FIELDID",
+                    get_keyword(
+                        self.actor,
+                        "jaeger",
+                        "configuration_loaded",
+                        idx=2,
+                        cnv=int,
+                    ),
+                    "Field ID associated with CONFIGID",
+                ),
+            ]
+            for card in fps_cards:
+                header.append(card)
+
+            # TCC Cards
+            for card in get_lcotcc_cards(self.actor):
+                header.append(card)
+
         return controller, hdus
+
+
+def pvt2pos(tup):
+    pvt = PVT(*tup)
+    return pvt.getPos()
+
+
+def get_keyword(
+    actor: YaoActor,
+    model_name: str,
+    key: str,
+    idx: int | None = 0,
+    default: Any = "NaN",
+    cnv=None,
+):
+    """Returns the value of a keyword."""
+
+    if not actor.tron or not actor.tron.models:
+        actor.write("w", text=f"Cannot retrive keyword {key.upper()}.")
+        return default
+
+    model = actor.tron.models[model_name]
+
+    try:
+        value = model[key].value
+        if idx is not None:
+            value = value[idx]
+        if cnv:
+            value = cnv(value)
+        return value
+    except BaseException:
+        return default
+
+
+def get_lcotcc_cards(actor: YaoActor):
+    """Return a list of cards describing the LCO TCC state."""
+
+    model = "lcotcc"
+
+    cards: list[tuple] = []
+
+    objSysName = get_keyword(actor, "lcotcc", "objSys", 0, default="UNKNOWN")
+    cards.append(("OBJSYS", objSysName, "The TCC objSys"))
+
+    # ObjSys
+    cards += [
+        (
+            "RA",
+            get_keyword(actor, model, "objNetPos", 0, cnv=pvt2pos),
+            "RA of telescope boresight (deg)",
+        ),
+        (
+            "DEC",
+            get_keyword(actor, model, "objNetPos", 1, cnv=pvt2pos),
+            "Dec of telescope boresight (deg)",
+        ),
+        (
+            "AIRMASS",
+            get_keyword(actor, model, "airmass", 0, cnv=float),
+            "Airmass",
+        ),
+    ]
+
+    # Rotator
+    cards.append(
+        (
+            "HA",
+            get_keyword(actor, model, "tccHA", 0, cnv=float),
+            "HA axis pos. (approx, deg)",
+        )
+    )
+
+    cards.append(
+        (
+            "IPA",
+            get_keyword(actor, model, "axePos", 2, cnv=float),
+            "Rotator axis pos. (approx, deg)",
+        )
+    )
+
+    # Focus / M2
+    cards.append(
+        (
+            "FOCUS",
+            get_keyword(actor, model, "secFocus", 0, cnv=float),
+            "User-specified focus offset (um)",
+        )
+    )
+
+    orient_names = ("piston", "xtilt", "ytilt", "xtran", "ytran", "zrot")
+    for ii in range(len(orient_names)):
+        cards.append(
+            (
+                "M2" + orient_names[ii].upper(),
+                get_keyword(actor, model, "secOrient", ii, cnv=float),
+                "TCC SecOrient",
+            )
+        )
+
+    # Temperatures
+    cards.append(
+        (
+            "T_OUT",
+            get_keyword(actor, model, "tccTemps", 0, cnv=float),
+            "Outside temperature deg C.",
+        )
+    )
+
+    cards.append(
+        (
+            "T_IN",
+            get_keyword(actor, model, "tccTemps", 1, cnv=float),
+            "Inside temperature deg C.",
+        )
+    )
+
+    cards.append(
+        (
+            "T_PRIM",
+            get_keyword(actor, model, "tccTemps", 2, cnv=float),
+            "Primary mirror temperature deg C.",
+        )
+    )
+
+    cards.append(
+        (
+            "T_CELL",
+            get_keyword(actor, model, "tccTemps", 3, cnv=float),
+            "Cell temperature deg C.",
+        )
+    )
+
+    cards.append(
+        (
+            "T_FLOOR",
+            get_keyword(actor, model, "tccTemps", 4, cnv=float),
+            "Floor temperature deg C.",
+        )
+    )
+
+    cards.append(
+        (
+            "T_TRUSS",
+            get_keyword(actor, "lcotcc", "secTrussTemp", 0, cnv=float),
+            "Truss temperature deg C.",
+        )
+    )
+
+    return cards
