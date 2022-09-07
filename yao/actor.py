@@ -79,8 +79,8 @@ class YaoActor(ArchonBaseActor, LegacyActor):
             )
 
         self.timed_commands.clear()
-        self.timed_commands.add_command("mech status", delay=20)
-        self.timed_commands.add_command("status", delay=30)
+        self.timed_commands.add_command("mech status --debug", delay=60)
+        self.timed_commands.add_command("status --debug", delay=60)
 
         return await super().start()
 
