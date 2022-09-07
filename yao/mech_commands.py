@@ -97,7 +97,13 @@ FAILED_STAT_REPLIES = {
 
 @mech.command()
 @click.argument("STAT", type=click.Choice(list(STATS)), required=False)
-async def status(command: YaoCommand, controllers, stat: str | None = None):
+@click.option("-d", "--debug", is_flag=True, help="Uses debug status in outputs..")
+async def status(
+    command: YaoCommand,
+    controllers,
+    stat: str | None = None,
+    debug: bool = False,
+):
     """Queries specMech for all status responses."""
 
     if not check_controller(command):
@@ -107,6 +113,11 @@ async def status(command: YaoCommand, controllers, stat: str | None = None):
         process_stats = list(STATS)
     else:
         process_stats = [stat.lower()]
+
+    if debug:
+        write_func = command.debug
+    else:
+        write_func = command.info
 
     for this_stat in process_stats:
 
@@ -126,7 +137,7 @@ async def status(command: YaoCommand, controllers, stat: str | None = None):
 
         if this_stat.startswith("motor-"):
             pos, vel, current, _, limit = values[1:]
-            command.info(
+            write_func(
                 message={this_stat.replace("-", "_"): [pos, vel, current, limit]}
             )
 
@@ -135,10 +146,10 @@ async def status(command: YaoCommand, controllers, stat: str | None = None):
                 command.warning(f"Motor {motor}: limit switch has been triggered!")
 
         elif this_stat == "motors":
-            command.info(motor_positions=values)
+            write_func(motor_positions=values)
 
         elif this_stat == "environment":
-            command.info(
+            write_func(
                 temperature_blue=values[0],
                 humidity_blue=values[1],
                 temperature_red=values[2],
@@ -149,10 +160,10 @@ async def status(command: YaoCommand, controllers, stat: str | None = None):
             )
 
         elif this_stat == "orientation":
-            command.info(accelerometer=values)
+            write_func(accelerometer=values)
 
         elif this_stat == "pneumatics":
-            command.info(
+            write_func(
                 shutter=values[0],
                 hartmann_left=values[1],
                 hartmann_right=values[2],
@@ -160,25 +171,25 @@ async def status(command: YaoCommand, controllers, stat: str | None = None):
             )
 
         elif this_stat == "time":
-            command.info(boot_time=values[0], clock_time=values[1], set_time=values[2])
+            write_func(boot_time=values[0], clock_time=values[1], set_time=values[2])
 
         elif this_stat == "version":
-            command.info(specMech_version=values[0])
+            write_func(specMech_version=values[0])
 
         elif this_stat == "vacuum":
-            command.info(
+            write_func(
                 vacuum_red_log10_pa=values[0],
                 vacuum_blue_log10_pa=values[1],
             )
 
         elif this_stat == "specmech":
-            command.info(
+            write_func(
                 fan=values[0],
                 power_supply_volts=values[1],
             )
 
         elif this_stat == "nitrogen":
-            command.info(
+            write_func(
                 buffer_dewar_supply_status=values[0],
                 buffer_dewar_vent_status=values[1],
                 red_dewar_vent_status=values[2],
