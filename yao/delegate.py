@@ -23,7 +23,7 @@ class YaoDelegate(ExposureDelegate):
         """Open/close the shutter."""
 
         try:
-            self.command.actor.spec_mech.pneumatic_move(
+            await self.command.actor.spec_mech.pneumatic_move(
                 "shutter",
                 open=open,
                 command=self.command,
