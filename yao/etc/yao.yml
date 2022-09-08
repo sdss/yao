@@ -1,15 +1,16 @@
 ---
 enabled_controllers: [sp2]
+excluded_cameras: [r2]
 
 controllers:
   sp2:
     host: 192.168.1.2
     port: 4242
     detectors:
-      # r2:
-      #   taps: 4
-      #   gain: 2.2
-      #   readnoise: 10
+      r2:
+        taps: 4
+        gain: 2.2
+        readnoise: 10
       b2:
         taps: 4
         gain: 1.4
@@ -18,9 +19,9 @@ controllers:
       b2:
         lines: 56
         pixels: 78
-      # r2:
-      #   lines: 48
-      #   pixels: 112
+      r2:
+        lines: 48
+        pixels: 112
 
 window_modes:
   hartmann:
