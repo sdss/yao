@@ -65,6 +65,7 @@ actor:
 
 files:
   data_dir: '/data/spectro'
+  use_sjd: true
   split: true
   template: 'sdR-{ccd}-{exposure_no:08d}.fit.gz'
 
