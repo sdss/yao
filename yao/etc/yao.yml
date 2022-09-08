@@ -60,6 +60,7 @@ actor:
   models:
     - jaeger
     - lcotcc
+    - lcolamps
   schema: etc/schema.json
   log_dir: /data/logs/yao
 

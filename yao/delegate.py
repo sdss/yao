@@ -28,7 +28,7 @@ if TYPE_CHECKING:
 # TODO: LCOTCC cards are copied from flicamera. Should reunify code.
 
 
-class YaoDelegate(ExposureDelegate):
+class YaoDelegate(ExposureDelegate["YaoActor"]):
     """Exposure delegate for BOSS."""
 
     async def shutter(self, open: bool = False) -> bool:
@@ -181,6 +181,42 @@ class YaoDelegate(ExposureDelegate):
             # TCC Cards
             for card in get_lcotcc_cards(self.actor):
                 header.append(card)
+
+            # Lamps
+            for lamp in ["FF", "Ne", "HeAr"]:
+                value = get_keyword(self.actor, "lcolamps", lamp, idx=0, default="?")
+                if value == "ON":
+                    card_value = "1 1 1 1"
+                elif value == "OFF":
+                    card_value = "0 0 0 0"
+                else:
+                    card_value = "? ? ? ?"
+                header.append((lamp.upper(), card_value, f"{lamp} lamps 1:On 0:Off"))
+
+            # Collimator and hartmann
+            status_left = await self.actor.spec_mech.pneumatic_status("left")
+            status_right = await self.actor.spec_mech.pneumatic_status("right")
+            if status_left == "closed" and status_right == "closed":
+                hartmann = "Left,Right"
+            elif status_left == "closed" and status_right == "open":
+                hartmann = "Left"
+            elif status_left == "open" and status_right == "closed":
+                hartmann = "Right"
+            elif status_left == "open" and status_right == "open":
+                hartmann = "Out"
+            else:
+                hartmann = "?"
+            header.append(("HARTMANN", hartmann, "Hartmanns: Left,Right,Out"))
+
+            for motor in ["a", "b", "c"]:
+                _, pos, *_ = await self.actor.spec_mech.get_stat(f"motor-{motor}")
+                header.append(
+                    (
+                        f"COLL{motor.upper()}",
+                        int(pos),
+                        f"The position of the {motor.upper()} collimator motor",
+                    )
+                )
 
         return controller, hdus
 
