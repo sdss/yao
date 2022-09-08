@@ -41,7 +41,7 @@ STATS: dict[str, str] = {
     "motor-c": "rc",
     "orientation": "ro",
     "pneumatics": "rp",
-    "nitrogen": "rn",
+    # "nitrogen": "rn",
     "specmech": "rs",
 }
 
