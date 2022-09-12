@@ -193,6 +193,13 @@ class YaoDelegate(ExposureDelegate["YaoActor"]):
                     card_value = "? ? ? ?"
                 header.append((lamp.upper(), card_value, f"{lamp} lamps 1:On 0:Off"))
 
+            # Hacking FFS and FF for now.
+            if self.expose_data:
+                if self.expose_data.flavour == "flat":
+                    header["FF"] = "1 1 1 1"
+                if self.expose_data.flavour in ["flat", "arc"]:
+                    header.append(("FFS", "1 1 1 1 1 1 1 1", "FFS 0:Closed 1:Open"))
+
             # Collimator and hartmann
             status_left = await self.actor.spec_mech.pneumatic_status("left")
             status_right = await self.actor.spec_mech.pneumatic_status("right")
