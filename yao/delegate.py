@@ -127,6 +127,10 @@ class YaoDelegate(ExposureDelegate["YaoActor"]):
             header.rename_keyword("IMAGETYP", "FLAVOR")
             header.rename_keyword("OBSTIME", "DATE-OBS")
 
+            if self.expose_data and self.expose_data.flavour == "object":
+                # SoS expects science.
+                header["FLAVOR"] = "science"
+
             header["MJD"] = get_sjd()
 
             isot = Time(header["DATE-OBS"], format="isot", scale="tai")
