@@ -17,6 +17,7 @@ from clu.legacy.types.pvt import PVT
 
 from archon.actor.delegate import ExposureDelegate
 from archon.controller import ArchonController
+from sdsstools.time import get_sjd
 
 from .exceptions import SpecMechError
 
@@ -125,6 +126,8 @@ class YaoDelegate(ExposureDelegate["YaoActor"]):
 
             header.rename_keyword("IMAGETYP", "FLAVOR")
             header.rename_keyword("OBSTIME", "DATE-OBS")
+
+            header["MJD"] = get_sjd()
 
             isot = Time(header["DATE-OBS"], format="isot", scale="tai")
             tai_card = (
