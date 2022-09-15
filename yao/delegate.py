@@ -201,11 +201,13 @@ class YaoDelegate(ExposureDelegate["YaoActor"]):
                 header.append((lamp.upper(), card_value, f"{lamp} lamps 1:On 0:Off"))
 
             # Hacking FFS and FF for now.
-            if self.expose_data:
-                if self.expose_data.flavour == "flat":
-                    header["FF"] = "1 1 1 1"
-                if self.expose_data.flavour in ["flat", "arc"]:
-                    header.append(("FFS", "1 1 1 1 1 1 1 1", "FFS 0:Closed 1:Open"))
+            if self.expose_data and self.expose_data.flavour == "flat":
+                header["FF"] = "1 1 1 1"
+            if self.expose_data and self.expose_data.flavour in ["flat", "arc"]:
+                ffs_value = "1 1 1 1 1 1 1 1"
+            else:
+                ffs_value = "0 0 0 0 0 0 0 0"
+            header.append(("FFS", ffs_value, "FFS 0:Closed 1:Open"))
 
             # Collimator and hartmann
             status_left = await self.actor.spec_mech.pneumatic_status("left")
@@ -290,6 +292,26 @@ def get_lcotcc_cards(actor: YaoActor):
             "Dec of telescope boresight (deg)",
         ),
         (
+            "RADEG",
+            get_keyword(actor, model, "objNetPos", 0, cnv=pvt2pos),
+            "RA of telescope pointing (deg)",
+        ),
+        (
+            "DECDEG",
+            get_keyword(actor, model, "objNetPos", 1, cnv=pvt2pos),
+            "Dec of telescope pointing (deg)",
+        ),
+        (
+            "AZ",
+            get_keyword(actor, model, "axePos", 0, cnv=pvt2pos),
+            "Azimuth axis pos. (approx, deg)",
+        ),
+        (
+            "ALT",
+            get_keyword(actor, model, "axePos", 1, cnv=pvt2pos),
+            "Altitude axis pos. (approx, deg)",
+        ),
+        (
             "AIRMASS",
             get_keyword(actor, model, "airmass", 0, cnv=float),
             "Airmass",
@@ -302,6 +324,14 @@ def get_lcotcc_cards(actor: YaoActor):
             "HA",
             get_keyword(actor, model, "tccHA", 0, cnv=float),
             "HA axis pos. (approx, deg)",
+        )
+    )
+
+    cards.append(
+        (
+            "ROTPOS",
+            get_keyword(actor, model, "axePos", 2, cnv=float),
+            "Rotator requested pos. (approx, deg)",
         )
     )
 
