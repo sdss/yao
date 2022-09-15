@@ -303,12 +303,12 @@ def get_lcotcc_cards(actor: YaoActor):
         ),
         (
             "AZ",
-            get_keyword(actor, model, "axePos", 0, cnv=pvt2pos),
+            get_keyword(actor, model, "axePos", 0, cnv=float),
             "Azimuth axis pos. (approx, deg)",
         ),
         (
             "ALT",
-            get_keyword(actor, model, "axePos", 1, cnv=pvt2pos),
+            get_keyword(actor, model, "axePos", 1, cnv=float),
             "Altitude axis pos. (approx, deg)",
         ),
         (
