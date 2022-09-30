@@ -61,6 +61,7 @@ actor:
     - jaeger
     - lcotcc
     - lcolamps
+    - cherno
   schema: etc/schema.json
   log_dir: /data/logs/yao
 
