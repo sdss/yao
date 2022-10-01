@@ -1,6 +1,6 @@
 ---
 enabled_controllers: [sp2]
-excluded_cameras: [r2]
+excluded_cameras: []
 
 controllers:
   sp2:
