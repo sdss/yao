@@ -185,6 +185,10 @@ class YaoDelegate(ExposureDelegate["YaoActor"]):
             for card in fps_cards:
                 header.append(card)
 
+            # TCC Cards
+            for card in get_lcotcc_cards(self.actor):
+                header.append(card)
+
             # Cherno offset cards
             for idx, card in enumerate(["OFFRA", "OFFDEC", "OFFPA"]):
                 default = get_keyword(
