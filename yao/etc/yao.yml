@@ -9,7 +9,7 @@ controllers:
     detectors:
       r2:
         taps: 4
-        gain: 2.2
+        gain: 1.6
         readnoise: 10
       b2:
         taps: 4
