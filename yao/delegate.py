@@ -214,6 +214,19 @@ class YaoDelegate(ExposureDelegate["YaoActor"]):
                         "Absolute guider offset in " + card.replace("OFF", ""),
                     )
                 )
+            header.append(
+                (
+                    "SEEING",
+                    get_keyword(
+                        self.actor,
+                        "cherno",
+                        "astrometry_fit",
+                        idx=4,
+                        cnv=float,
+                    ),
+                    "Seeing from the guider [arcsec]",
+                )
+            )
 
             # Lamps
             for lamp in ["FF", "Ne", "HeAr"]:
