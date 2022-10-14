@@ -27,7 +27,7 @@ __all__ = ["hartmann"]
 async def run_subcmd(command: YaoCommand, command_string: str):
     """Runs a subcommand and checks its completion."""
 
-    subcmd = await command.send_command("yao", command_string)
+    subcmd = await command.child_command(command_string)
     if subcmd.status.did_fail:
         command.fail(f"Command {command_string} failed.")
         return False
@@ -79,15 +79,15 @@ async def hartmann(
             if status_side == "transitioning":
                 raise SpecMechError(f"Hartmann {ss} door is transitioning.")
             elif status_side == "open":
-                if await run_subcmd(command, f"mech close {ss}"):
+                if not (await run_subcmd(command, f"mech close {ss}")):
                     return
 
             # Check that the side door is closed or close it.
             status_other_side = await spec_mech.pneumatic_status(other_side)
             if status_other_side == "transitioning":
                 raise SpecMechError(f"Hartmann {other_side} door is transitioning.")
-            elif status_other_side == "open":
-                if await run_subcmd(command, f"mech open {other_side}"):
+            elif status_other_side == "closed":
+                if not (await run_subcmd(command, f"mech open {other_side}")):
                     return
 
             expose_cmd: str = "expose --arc"
@@ -95,8 +95,12 @@ async def hartmann(
                 expose_cmd += " --window-mode hartmann"
             expose_cmd += f" {exptime}"
 
-            if await run_subcmd(command, expose_cmd):
+            if not (await run_subcmd(command, expose_cmd)):
                 return
+
+        # Open closed door.
+        if not (await run_subcmd(command, "mech open right")):
+            return
 
     except SpecMechError as err:
         return command.fail(error=f"SpecMech error: {err}")
