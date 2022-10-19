@@ -31,6 +31,9 @@ window_modes:
 
 header:
   TELESCOP: 'du Pont 2.5m'
+  ARCHTEMP:
+    command: status
+    value: ['backplane_temp', 'Archon backplane temperature [degC]']
   CCDTEMP:
     command: status
     detectors:

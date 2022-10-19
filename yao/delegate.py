@@ -273,6 +273,41 @@ class YaoDelegate(ExposureDelegate["YaoActor"]):
                     )
                 )
 
+            # specMech data
+            ori = [-999, -999, -999]
+            try:
+                ori = await self.actor.spec_mech.get_stat("orientation")
+            except Exception as err:
+                self.command.warning(f"Cannot get specMech orientation: {err}")
+            finally:
+                for ii, axis in enumerate(["X", "Y", "Z"]):
+                    header.append(
+                        (
+                            f"MECHORI{axis}",
+                            ori[ii],
+                            f"Orientation in {axis} axis [cm/s2]",
+                        )
+                    )
+
+            mech_env = [-999] * 7
+            try:
+                mech_env = await self.actor.spec_mech.get_stat("environment")
+            except Exception as err:
+                self.command.warning(f"Cannot get specMech environment: {err}")
+            finally:
+                for ii, (label, comment) in enumerate(
+                    [
+                        ("B2CAMT", "B2 camera temperature [degC]"),
+                        ("B2CAMH", "B2 camera RH [%]"),
+                        ("R2CAMT", "R2 camera temperature [degC]"),
+                        ("R2CAMH", "R2 camera RH [%]"),
+                        ("COLLT", "Collimator temperature [degC]"),
+                        ("COLLH", "Collimator RH [%]"),
+                        ("SPECMT", "specMech temperature [degC]"),
+                    ]
+                ):
+                    header.append((label, mech_env[ii], comment))
+
         return controller, hdus
 
 
@@ -339,6 +374,11 @@ def get_lcotcc_cards(actor: YaoActor):
             "DECDEG",
             get_keyword(actor, model, "objNetPos", 1, cnv=pvt2pos),
             "Dec of telescope pointing (deg)",
+        ),
+        (
+            "Equinox",
+            2000.0,
+            "Equinox of celestial coordinate system",
         ),
         (
             "AZ",
