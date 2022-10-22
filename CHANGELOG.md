@@ -1,15 +1,18 @@
 # Changelog
 
+## Next version
+
+### 🚀 New
+
+* [#2](https://github.com/sdss/yao/pull/2) Add alerts for LN2 and CCD temperature and actor heartbeat.
+
+
 ## 1.0.0 - October 19, 2022
 
 ### 🚀 New
 
 * First stable version tested at LCO.
 * Added `MechController.pneumatic_status()` method.
-
-### 🚀 New
-
-* [#2](https://github.com/sdss/yao/pull/2) Add alerts for LN2 and CCD temperature and actor heartbeat.
 
 ### ✨ Improved
 
