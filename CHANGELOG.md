@@ -7,6 +7,10 @@
 * First stable version tested at LCO.
 * Added `MechController.pneumatic_status()` method.
 
+### 🚀 New
+
+* [#2](https://github.com/sdss/yao/pull/2) Add alerts for LN2 and CCD temperature and actor heartbeat.
+
 ### ✨ Improved
 
 * `mech move --home` has been renamed to `--center`.
