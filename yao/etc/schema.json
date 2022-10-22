@@ -63,7 +63,12 @@
     "red_dewar_thermistor_status": { "enum": ["cold", "warm", "?"] },
     "blue_dewar_thermistor_status": { "enum": ["cold", "warm", "?"] },
     "fan": { "enum": ["on", "off", "?"] },
-    "power_supply_volts": { "type": "number" }
+    "power_supply_volts": { "type": "number" },
+    "alive_at": { "type": "number" },
+    "b2_ccd_temp_alert": { "type": "boolean" },
+    "r2_ccd_temp_alert": { "type": "boolean" },
+    "b2_ln2_temp_alert": { "type": "boolean" },
+    "r2_ln2_temp_alert": { "type": "boolean" }
   },
   "additionalProperties": false
 }

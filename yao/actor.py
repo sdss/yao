@@ -22,6 +22,7 @@ from archon.actor.actor import ArchonBaseActor
 from archon.actor.tools import get_schema
 
 from yao import __version__, config
+from yao.alerts import AlertsBot
 from yao.commands import parser
 from yao.delegate import YaoDelegate
 from yao.exceptions import YaoUserWarning
@@ -49,6 +50,8 @@ class YaoActor(ArchonBaseActor, LegacyActor):
         super().__init__(*args, schema=schema, **kwargs)
 
         self.version = __version__
+
+        self.alerts_bot: AlertsBot | None = None
 
         # TODO: this assumes one single mech controller, not one per spectrograph,
         # but in practice for now that's fine.
@@ -78,7 +81,12 @@ class YaoActor(ArchonBaseActor, LegacyActor):
                 YaoUserWarning,
             )
 
-        return await super().start()
+        new_self = await super().start()
+
+        if self.alerts_bot is None:
+            self.alerts_bot = AlertsBot(self)
+
+        return new_self
 
     def merge_schemas(self, yao_schema_path: str | None = None):
         """Merge default schema with the one from yao."""

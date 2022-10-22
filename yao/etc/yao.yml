@@ -88,3 +88,15 @@ timeouts:
   fetching_max: 10
   flushing: 1.2
   pneumatics: 1.5
+
+alerts:
+  sp2:
+    ln2_base_temperature: -182.5
+    ln2_temperature_max_increase: 5.0
+    ccd_temperature_max_increase: 3.0
+    r2_ccd_status_param: mod2/tempa
+    b2_ccd_status_param: mod11/tempa
+    r2_ln2_status_param: mod2/tempb
+    b2_ln2_status_param: mod11/tempb
+    r2_setpoint_param: MOD2\HEATERATARGET
+    b2_setpoint_param: MOD11\HEATERATARGET
