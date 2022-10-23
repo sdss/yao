@@ -93,7 +93,9 @@ class BaseAlert(metaclass=abc.ABCMeta):
     def _notify(self, value: bool, force: bool = False):
         """Notifies if the alert is on or off."""
 
-        if value == self.value and not force:
+        # Output positive alerts every time, but false ones only if they
+        # change the current value of the alert.
+        if value == self.value and value is False and not force:
             return
 
         code = "w" if value is True else "i"
