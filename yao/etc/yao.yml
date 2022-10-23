@@ -92,7 +92,7 @@ timeouts:
 alerts:
   sp2:
     ln2_base_temperature: -182.5
-    ln2_temperature_max_increase: 2.5
+    ln2_temperature_max_increase: 3
     ccd_temperature_max_increase: 2.0
     r2_ccd_status_param: mod2/tempa
     b2_ccd_status_param: mod11/tempa
