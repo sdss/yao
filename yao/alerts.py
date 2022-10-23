@@ -11,6 +11,7 @@ from __future__ import annotations
 import abc
 import asyncio
 import time
+from collections import deque
 
 from typing import TYPE_CHECKING, Type
 
@@ -146,6 +147,13 @@ class TemperatureAlert(BaseAlert):
     setpoint_param: str | float
     max_increase: float
 
+    def __init__(self, actor: YaoActor, interval: float = 60):
+
+        # Rolling log of alert values; keeps only the last two measurements.
+        self._values_log = deque(maxlen=2)
+
+        super().__init__(actor, interval)
+
     async def check_alert(self):
         """Checks the CCD temperature."""
 
@@ -163,8 +171,16 @@ class TemperatureAlert(BaseAlert):
             setpoint = self.setpoint_param
 
         if temperature > setpoint + self.max_increase:
-            self.value = True
+            self._values_log.append(True)
         else:
+            self._values_log.append(False)
+
+        # We require two consecutive measurements to change the alarm.
+        if len(self._values_log) < 2:
+            pass
+        elif self._values_log[0] is True and self._values_log[1] is True:
+            self.value = True
+        elif self._values_log[0] is False and self._values_log[1] is False:
             self.value = False
 
 
