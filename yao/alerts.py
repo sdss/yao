@@ -96,7 +96,7 @@ class BaseAlert(metaclass=abc.ABCMeta):
             return
 
         code = "w" if value is True else "i"
-        self.actor.write(code, {self.keyword: value})
+        self.actor.write(code, {self.keyword: int(value)})
 
     def start(self):
         """Starts the alert handler."""
