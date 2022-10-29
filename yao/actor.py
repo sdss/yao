@@ -64,6 +64,7 @@ class YaoActor(ArchonBaseActor, LegacyActor):
         archon_log.addHandler(self.log.sh)
         if self.log.fh:
             archon_log.addHandler(self.log.fh)
+            self.log.fh.setLevel(10)
 
     async def start(self):
         """Starts the actor and connects the specMech client."""
