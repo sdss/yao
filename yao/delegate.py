@@ -78,48 +78,53 @@ class YaoDelegate(ExposureDelegate["YaoActor"]):
                 self.command.warning(text=f"Unknown CCD {ccd}.")
                 continue
 
-            if WIN_MODE != "hartmann":
-                OL = config["controllers"]["sp2"]["overscan_regions"][ccd]["lines"]
-                OL_END = -OL
-            else:
-                OL = 0
-                OL_END = None
+            # Decide whether we want to do some callisthenics with the data to move
+            # the overscan regions to the edges and to make things look exactly like
+            # at APO.
+            if config["controllers"]["sp2"].get("raw_mode", False) is False:
 
-            OP = config["controllers"]["sp2"]["overscan_regions"][ccd]["pixels"]
+                if WIN_MODE != "hartmann":
+                    OL = config["controllers"]["sp2"]["overscan_regions"][ccd]["lines"]
+                    OL_END = -OL
+                else:
+                    OL = 0
+                    OL_END = None
 
-            # Copy original data.
-            raw = data.copy()
+                OP = config["controllers"]["sp2"]["overscan_regions"][ccd]["pixels"]
 
-            # Rearrange pixel overscan.
-            data[:, :OP] = raw[:, PIXELS - OP : PIXELS]
-            data[:, -OP:] = raw[:, PIXELS : PIXELS + OP]
+                # Copy original data.
+                rr = data.copy()
 
-            # Rearrange line overscan.
-            if OL > 0:
-                data[:OL, OP:PIXELS] = raw[LINES - OL : LINES, : PIXELS - OP]  # BL
-                data[-OL:, OP:PIXELS] = raw[LINES : LINES + OL, : PIXELS - OP]  # TL
-                data[:OL, PIXELS:-OP] = raw[LINES - OL : LINES, PIXELS + OP :]  # BL
-                data[-OL:, PIXELS:-OP] = raw[LINES : LINES + OL, PIXELS + OP :]  # BR
+                # Rearrange pixel overscan.
+                data[:, :OP] = rr[:, PIXELS - OP : PIXELS]
+                data[:, -OP:] = rr[:, PIXELS : PIXELS + OP]
 
-            # Rearrange data.
-            data[OL:LINES, OP:PIXELS] = raw[: LINES - OL, : PIXELS - OP]  # BL
-            data[LINES:OL_END, OP:PIXELS] = raw[LINES + OL :, : PIXELS - OP]  # TL
-            data[OL:LINES, PIXELS:-OP] = raw[: LINES - OL, PIXELS + OP :]  # BR
-            data[LINES:OL_END, PIXELS:-OP] = raw[LINES + OL :, PIXELS + OP :]  # TR
+                # Rearrange line overscan.
+                if OL > 0:
+                    data[:OL, OP:PIXELS] = rr[LINES - OL : LINES, : PIXELS - OP]  # BL
+                    data[-OL:, OP:PIXELS] = rr[LINES : LINES + OL, : PIXELS - OP]  # TL
+                    data[:OL, PIXELS:-OP] = rr[LINES - OL : LINES, PIXELS + OP :]  # BL
+                    data[-OL:, PIXELS:-OP] = rr[LINES : LINES + OL, PIXELS + OP :]  # BR
 
-            if WIN_MODE == "hartmann":
-                DEF_LINES = controller.default_window["lines"]
-                DEF_PIXELS = controller.default_window["pixels"]
-                new_data = numpy.zeros((DEF_LINES * 2, DEF_PIXELS * 2), dtype="u2")
+                # Rearrange data.
+                data[OL:LINES, OP:PIXELS] = rr[: LINES - OL, : PIXELS - OP]  # BL
+                data[LINES:OL_END, OP:PIXELS] = rr[LINES + OL :, : PIXELS - OP]  # TL
+                data[OL:LINES, PIXELS:-OP] = rr[: LINES - OL, PIXELS + OP :]  # BR
+                data[LINES:OL_END, PIXELS:-OP] = rr[LINES + OL :, PIXELS + OP :]  # TR
 
-                PRELINES = controller.current_window["preskiplines"]
+                if WIN_MODE == "hartmann":
+                    DEF_LINES = controller.default_window["lines"]
+                    DEF_PIXELS = controller.default_window["pixels"]
+                    new_data = numpy.zeros((DEF_LINES * 2, DEF_PIXELS * 2), dtype="u2")
 
-                new_data[PRELINES : PRELINES + LINES, :] = data[:LINES, :]
-                new_data[-PRELINES - LINES : -PRELINES, :] = data[LINES:, :]
+                    PRELINES = controller.current_window["preskiplines"]
 
-                hdu.data = new_data
-            else:
-                hdu.data = data
+                    new_data[PRELINES : PRELINES + LINES, :] = data[:LINES, :]
+                    new_data[-PRELINES - LINES : -PRELINES, :] = data[LINES:, :]
+
+                    hdu.data = new_data
+                else:
+                    hdu.data = data
 
             # Rename some keywords and add others to match APO BOSS datamodel.
             header.insert("CCD", ("CAMERAS", header["CCD"]))
