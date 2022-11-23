@@ -24,6 +24,7 @@ from archon.actor.tools import get_schema
 from yao import __version__, config
 from yao.alerts import AlertsBot
 from yao.commands import parser
+from yao.controller import YaoController
 from yao.delegate import YaoDelegate
 from yao.exceptions import YaoUserWarning
 from yao.mech_controller import MechController
