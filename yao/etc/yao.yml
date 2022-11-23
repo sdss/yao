@@ -87,7 +87,7 @@ timeouts:
   readout_max: 60
   fetching_expected: 5
   fetching_max: 10
-  flushing: 1.2
+  flushing: 0.5
   pneumatics: 1.5
 
 alerts:
