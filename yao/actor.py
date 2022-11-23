@@ -35,6 +35,8 @@ class YaoActor(ArchonBaseActor, LegacyActor):
     is_legacy = True
 
     DELEGATE_CLASS = YaoDelegate
+    CONTROLLER_CLASS = YaoController
+
     parser = parser
 
     def __init__(self, *args, **kwargs):

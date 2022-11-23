@@ -19,6 +19,7 @@ from .exceptions import SpecMechError
 
 if TYPE_CHECKING:
     from .actor import YaoCommand
+    from .controller import YaoController
 
 
 __all__ = ["hartmann"]
@@ -113,3 +114,41 @@ async def hartmann(
         await command.send_command("yao", "set-window")
 
     return command.finish()
+
+
+@parser.command()
+async def erase(command: YaoCommand, controllers: dict[str, YaoController]):
+    """Runs the r2 erase routine."""
+
+    for controller in controllers.values():
+        command.info(f"Running erase routine on spectrograph {controller.name}.")
+        await controller.erase()
+
+    return command.finish("All done.")
+
+
+@parser.group()
+def purge(*args):
+    """Sets the purge routine on/off."""
+
+    pass
+
+
+@purge.command()
+async def on(command: YaoCommand, controllers: dict[str, YaoController]):
+    """Sets DoPurge=1."""
+
+    for controller in controllers.values():
+        await controller.set_param("DoPurge", 1)
+
+    return command.finish("All done.")
+
+
+@purge.command()
+async def off(command: YaoCommand, controllers: dict[str, YaoController]):
+    """Sets DoPurge=0."""
+
+    for controller in controllers.values():
+        await controller.set_param("DoPurge", 0)
+
+    return command.finish("All done.")
