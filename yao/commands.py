@@ -127,6 +127,22 @@ async def erase(command: YaoCommand, controllers: dict[str, YaoController]):
     return command.finish("All done.")
 
 
+@parser.command()
+@click.option("--erase", is_flag=True, help="Run the erase procedure too.")
+async def cleanup(
+    command: YaoCommand,
+    controllers: dict[str, YaoController],
+    erase: bool = False,
+):
+    """Runs the r2 cleanup routine."""
+
+    for controller in controllers.values():
+        command.info(f"Running cleanup routine on spectrograph {controller.name}.")
+        await controller.cleanup(erase=erase, notifier=command.info)
+
+    return command.finish("All done.")
+
+
 @parser.group()
 def purge(*args):
     """Sets the purge routine on/off."""
