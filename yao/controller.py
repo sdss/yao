@@ -45,7 +45,25 @@ class YaoController(ArchonController):
         fast: bool = False,
         notifier: Callable[[str], None] | None = None,
     ):
-        """Runs a cleanup procedure."""
+        """Runs a cleanup procedure for the LBNL chip.
+
+        Executes a number of cycles of the e-purge routine followed by a chip
+        flush (complete or fast). After the e-purge cycles have been completed,
+        runs three full flushing cycles.
+
+        Parameters
+        ----------
+        erase
+            Calls the `.erase` routine before running the e-purge cycle.
+        n_cycles
+            Number of e-purge/flushing cycles to execute.
+        fast
+            If `False`, a complete flushing is executed after each e-purge (each
+            line is shifted and read). If `True`, a binning factor of 10 is used.
+        notifier
+            A function to call to output messages (usually a command write method).
+
+        """
 
         if notifier is None:
             notifier = lambda text: None  # noqa
@@ -76,6 +94,18 @@ class YaoController(ArchonController):
         return True
 
     async def purge(self, fast: bool = True):
+        """Runs a single cycle of the e-purge routine.
+
+        A cycle consists of an execution of the e-purge routine followed by a
+        chip flushing.
+
+        Parameters
+        ----------
+        fast
+            If `False`, a complete flushing is executed after the e-purge (each
+            line is shifted and read). If `True`, a binning factor of 10 is used.
+
+        """
 
         log.info("Running e-purge.")
 
