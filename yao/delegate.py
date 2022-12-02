@@ -8,7 +8,9 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any
+import asyncio
+
+from typing import TYPE_CHECKING, Any, List
 
 import numpy
 from astropy.io import fits
@@ -24,6 +26,7 @@ from .exceptions import SpecMechError
 
 if TYPE_CHECKING:
     from yao.actor import YaoActor
+    from yao.controller import YaoController
 
 
 # TODO: LCOTCC cards are copied from flicamera. Should reunify code.
@@ -31,6 +34,15 @@ if TYPE_CHECKING:
 
 class YaoDelegate(ExposureDelegate["YaoActor"]):
     """Exposure delegate for BOSS."""
+
+    async def pre_expose(self, controllers: List[YaoController]):
+        """Runs the e-purge routine before the exposure."""
+
+        self.command.info("E-purging and flushing.")
+
+        await asyncio.gather(*[controller.purge() for controller in controllers])
+
+        return True
 
     async def shutter(self, open: bool = False) -> bool:
         """Open/close the shutter."""
