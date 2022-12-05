@@ -355,6 +355,14 @@ def get_keyword(
             value = value[idx]
         if cnv:
             value = cnv(value)
+
+        # Headers cannot have NaN values as floats.
+        try:
+            if numpy.isnan(value):
+                value = "NaN"
+        except TypeError:
+            pass
+
         return value
     except BaseException:
         return default
