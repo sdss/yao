@@ -76,7 +76,7 @@ files:
   template: 'sdR-{ccd}-{exposure_no:08d}.fit.gz'
 
 archon:
-  acf_file: BOSS_extra_purge_erase_v3.acf
+  acf_file: BOSS_extra_purge_erase_v5.acf
 
 timeouts:
   controller_connect: 5
