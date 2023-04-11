@@ -6,6 +6,11 @@
 
 * [#2](https://github.com/sdss/yao/pull/2) Add alerts for LN2 and CCD temperature and actor heartbeat.
 
+### ✨ Improved
+
+* Upgraded to use `sdss-archon>=0.9.0`.
+* The collecting of actor information (lamps, specMech, etc.) now happens during the exposure instead of after readout completes.
+
 
 ## 1.0.0 - October 19, 2022
 

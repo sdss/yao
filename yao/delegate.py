@@ -25,6 +25,8 @@ from .exceptions import SpecMechError
 
 
 if TYPE_CHECKING:
+    from clu.command import Command
+
     from yao.actor import YaoActor
     from yao.controller import YaoController
 
@@ -34,6 +36,11 @@ if TYPE_CHECKING:
 
 class YaoDelegate(ExposureDelegate["YaoActor"]):
     """Exposure delegate for BOSS."""
+
+    def __init__(self, actor: YaoActor):
+        super().__init__(actor)
+
+        self.header_data = {}
 
     async def pre_expose(self, controllers: List[YaoController]):
         """Runs the e-purge routine before the exposure."""
@@ -66,6 +73,187 @@ class YaoDelegate(ExposureDelegate["YaoActor"]):
 
         return True
 
+    async def readout(
+        self,
+        command: Command[YaoActor],
+        extra_header=...,
+        delay_readout: int = 0,
+        write: bool = True,
+    ):
+        """Reads detectors."""
+
+        # Finish exposure tasks.
+        try:
+            if self._expose_cotasks:
+                self.command.debug(text="Awaiting for exposure cotasks to finishing.")
+                await asyncio.wait_for(self._expose_cotasks, 10)
+        except asyncio.TimeoutError:
+            self.command.warning("Timed out running exposure cotasks.")
+
+        return await super().readout(command, extra_header, delay_readout, write)
+
+    async def expose_cotasks(self):
+        """Grab header information during exposure."""
+
+        self.command.debug(text="Starting exposure cotasks.")
+
+        self.header_data = {}
+
+        self.header_data["fps_cards"] = [
+            (
+                "CONFID",
+                get_keyword(
+                    self.actor,
+                    "jaeger",
+                    "configuration_loaded",
+                    idx=0,
+                    cnv=int,
+                ),
+                "Configuration ID",
+            ),
+            (
+                "DESIGNID",
+                get_keyword(
+                    self.actor,
+                    "jaeger",
+                    "configuration_loaded",
+                    idx=1,
+                    cnv=int,
+                ),
+                "Design ID associated with CONFIGID",
+            ),
+            (
+                "FIELDID",
+                get_keyword(
+                    self.actor,
+                    "jaeger",
+                    "configuration_loaded",
+                    idx=2,
+                    cnv=int,
+                ),
+                "Field ID associated with CONFIGID",
+            ),
+        ]
+
+        self.header_data["lcotcc_cards"] = get_lcotcc_cards(self.actor)
+
+        cherno_cards = []
+        for idx, card in enumerate(["OFFRA", "OFFDEC", "OFFPA"]):
+            default = get_keyword(
+                self.actor,
+                "cherno",
+                "default_offset",
+                idx=idx,
+                default=0.0,
+                cnv=float,
+            )
+            offset = get_keyword(
+                self.actor,
+                "cherno",
+                "offset",
+                idx=idx,
+                default=0.0,
+                cnv=float,
+            )
+            cherno_cards.append(
+                (
+                    card,
+                    default + offset,
+                    "Absolute guider offset in " + card.replace("OFF", ""),
+                )
+            )
+        cherno_cards.append(
+            (
+                "SEEING",
+                get_keyword(
+                    self.actor,
+                    "cherno",
+                    "astrometry_fit",
+                    idx=4,
+                    cnv=float,
+                ),
+                "Seeing from the guider [arcsec]",
+            )
+        )
+        self.header_data["cherno_cards"] = cherno_cards
+
+        lamp_cards = []
+        for lamp in ["FF", "Ne", "HeAr"]:
+            value = get_keyword(self.actor, "lcolamps", lamp, idx=0, default="?")
+            if value == "ON":
+                card_value = "1 1 1 1"
+            elif value == "OFF":
+                card_value = "0 0 0 0"
+            else:
+                card_value = "? ? ? ?"
+            lamp_cards.append((lamp.upper(), card_value, f"{lamp} lamps 1:On 0:Off"))
+        self.header_data["lamp_cards"] = lamp_cards
+
+        specmech_cards = []
+
+        status_left = await self.actor.spec_mech.pneumatic_status("left")
+        status_right = await self.actor.spec_mech.pneumatic_status("right")
+        if status_left == "closed" and status_right == "closed":
+            hartmann = "Left,Right"
+        elif status_left == "closed" and status_right == "open":
+            hartmann = "Left"
+        elif status_left == "open" and status_right == "closed":
+            hartmann = "Right"
+        elif status_left == "open" and status_right == "open":
+            hartmann = "Out"
+        else:
+            hartmann = "?"
+        specmech_cards.append(("HARTMANN", hartmann, "Hartmanns: Left,Right,Out"))
+
+        for motor in ["a", "b", "c"]:
+            _, pos, *_ = await self.actor.spec_mech.get_stat(f"motor-{motor}")
+            specmech_cards.append(
+                (
+                    f"COLL{motor.upper()}",
+                    int(pos),
+                    f"The position of the {motor.upper()} collimator motor",
+                )
+            )
+
+        # specMech data
+        ori = [-999, -999, -999]
+        try:
+            ori = await self.actor.spec_mech.get_stat("orientation")
+        except Exception as err:
+            self.command.warning(f"Cannot get specMech orientation: {err}")
+        finally:
+            for ii, axis in enumerate(["X", "Y", "Z"]):
+                specmech_cards.append(
+                    (
+                        f"MECHORI{axis}",
+                        ori[ii],
+                        f"Orientation in {axis} axis [cm/s2]",
+                    )
+                )
+
+        mech_env = [-999] * 7
+        try:
+            mech_env = await self.actor.spec_mech.get_stat("environment")
+        except Exception as err:
+            self.command.warning(f"Cannot get specMech environment: {err}")
+        finally:
+            for ii, (label, comment) in enumerate(
+                [
+                    ("B2CAMT", "B2 camera temperature [degC]"),
+                    ("B2CAMH", "B2 camera RH [%]"),
+                    ("R2CAMT", "R2 camera temperature [degC]"),
+                    ("R2CAMH", "R2 camera RH [%]"),
+                    ("COLLT", "Collimator temperature [degC]"),
+                    ("COLLH", "Collimator RH [%]"),
+                    ("SPECMT", "specMech temperature [degC]"),
+                ]
+            ):
+                specmech_cards.append((label, mech_env[ii], comment))
+
+        self.header_data["specmech_cards"] = specmech_cards
+
+        return await super().expose_cotasks()
+
     async def post_process(
         self,
         controller: ArchonController,
@@ -94,7 +282,6 @@ class YaoDelegate(ExposureDelegate["YaoActor"]):
             # the overscan regions to the edges and to make things look exactly like
             # at APO.
             if config["controllers"]["sp2"].get("raw_mode", False) is False:
-
                 if WIN_MODE != "hartmann":
                     OL = config["controllers"]["sp2"]["overscan_regions"][ccd]["lines"]
                     OL_END = -OL
@@ -164,97 +351,20 @@ class YaoDelegate(ExposureDelegate["YaoActor"]):
             # Instrument cards
             header.append(("CARTID", "FPS-S", "Instrument ID"))
 
-            fps_cards = [
-                (
-                    "CONFID",
-                    get_keyword(
-                        self.actor,
-                        "jaeger",
-                        "configuration_loaded",
-                        idx=0,
-                        cnv=int,
-                    ),
-                    "Configuration ID",
-                ),
-                (
-                    "DESIGNID",
-                    get_keyword(
-                        self.actor,
-                        "jaeger",
-                        "configuration_loaded",
-                        idx=1,
-                        cnv=int,
-                    ),
-                    "Design ID associated with CONFIGID",
-                ),
-                (
-                    "FIELDID",
-                    get_keyword(
-                        self.actor,
-                        "jaeger",
-                        "configuration_loaded",
-                        idx=2,
-                        cnv=int,
-                    ),
-                    "Field ID associated with CONFIGID",
-                ),
-            ]
-            for card in fps_cards:
+            for card in self.header_data.get("fps_cards", []):
                 header.append(card)
 
             # TCC Cards
-            for card in get_lcotcc_cards(self.actor):
+            for card in self.header_data.get("lcotcc_cards", []):
                 header.append(card)
 
             # Cherno offset cards
-            for idx, card in enumerate(["OFFRA", "OFFDEC", "OFFPA"]):
-                default = get_keyword(
-                    self.actor,
-                    "cherno",
-                    "default_offset",
-                    idx=idx,
-                    default=0.0,
-                    cnv=float,
-                )
-                offset = get_keyword(
-                    self.actor,
-                    "cherno",
-                    "offset",
-                    idx=idx,
-                    default=0.0,
-                    cnv=float,
-                )
-                header.append(
-                    (
-                        card,
-                        default + offset,
-                        "Absolute guider offset in " + card.replace("OFF", ""),
-                    )
-                )
-            header.append(
-                (
-                    "SEEING",
-                    get_keyword(
-                        self.actor,
-                        "cherno",
-                        "astrometry_fit",
-                        idx=4,
-                        cnv=float,
-                    ),
-                    "Seeing from the guider [arcsec]",
-                )
-            )
+            for card in self.header_data.get("cherno_cards", []):
+                header.append(card)
 
             # Lamps
-            for lamp in ["FF", "Ne", "HeAr"]:
-                value = get_keyword(self.actor, "lcolamps", lamp, idx=0, default="?")
-                if value == "ON":
-                    card_value = "1 1 1 1"
-                elif value == "OFF":
-                    card_value = "0 0 0 0"
-                else:
-                    card_value = "? ? ? ?"
-                header.append((lamp.upper(), card_value, f"{lamp} lamps 1:On 0:Off"))
+            for card in self.header_data.get("lamp_cards", []):
+                header.append(card)
 
             # Hacking FFS and FF for now.
             if self.expose_data and self.expose_data.flavour == "flat":
@@ -265,65 +375,9 @@ class YaoDelegate(ExposureDelegate["YaoActor"]):
                 ffs_value = "0 0 0 0 0 0 0 0"
             header.append(("FFS", ffs_value, "FFS 0:Closed 1:Open"))
 
-            # Collimator and hartmann
-            status_left = await self.actor.spec_mech.pneumatic_status("left")
-            status_right = await self.actor.spec_mech.pneumatic_status("right")
-            if status_left == "closed" and status_right == "closed":
-                hartmann = "Left,Right"
-            elif status_left == "closed" and status_right == "open":
-                hartmann = "Left"
-            elif status_left == "open" and status_right == "closed":
-                hartmann = "Right"
-            elif status_left == "open" and status_right == "open":
-                hartmann = "Out"
-            else:
-                hartmann = "?"
-            header.append(("HARTMANN", hartmann, "Hartmanns: Left,Right,Out"))
-
-            for motor in ["a", "b", "c"]:
-                _, pos, *_ = await self.actor.spec_mech.get_stat(f"motor-{motor}")
-                header.append(
-                    (
-                        f"COLL{motor.upper()}",
-                        int(pos),
-                        f"The position of the {motor.upper()} collimator motor",
-                    )
-                )
-
-            # specMech data
-            ori = [-999, -999, -999]
-            try:
-                ori = await self.actor.spec_mech.get_stat("orientation")
-            except Exception as err:
-                self.command.warning(f"Cannot get specMech orientation: {err}")
-            finally:
-                for ii, axis in enumerate(["X", "Y", "Z"]):
-                    header.append(
-                        (
-                            f"MECHORI{axis}",
-                            ori[ii],
-                            f"Orientation in {axis} axis [cm/s2]",
-                        )
-                    )
-
-            mech_env = [-999] * 7
-            try:
-                mech_env = await self.actor.spec_mech.get_stat("environment")
-            except Exception as err:
-                self.command.warning(f"Cannot get specMech environment: {err}")
-            finally:
-                for ii, (label, comment) in enumerate(
-                    [
-                        ("B2CAMT", "B2 camera temperature [degC]"),
-                        ("B2CAMH", "B2 camera RH [%]"),
-                        ("R2CAMT", "R2 camera temperature [degC]"),
-                        ("R2CAMH", "R2 camera RH [%]"),
-                        ("COLLT", "Collimator temperature [degC]"),
-                        ("COLLH", "Collimator RH [%]"),
-                        ("SPECMT", "specMech temperature [degC]"),
-                    ]
-                ):
-                    header.append((label, mech_env[ii], comment))
+            # specMech
+            for card in self.header_data.get("specmech_cards", []):
+                header.append(card)
 
         return controller, hdus
 
