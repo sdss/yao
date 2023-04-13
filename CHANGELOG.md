@@ -8,9 +8,15 @@
 
 ### ✨ Improved
 
+* Use new ACF file with e-purge, erase, and improvements to horizontal transfer.
+* Change flushing to not binned.
 * Upgraded to use `sdss-archon>=0.9.0`.
 * The collecting of actor information (lamps, specMech, etc.) now happens during the exposure instead of after readout completes.
 * Create checksum files using `sha1sum`.
+
+### 🏷️ Change
+
+* Set b2 temperature to -98 degC.
 
 
 ## 1.0.0 - October 19, 2022
