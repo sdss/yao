@@ -29,8 +29,7 @@ yao = "yao.__main__:yao"
 
 [tool.poetry.dependencies]
 python = ">=3.9,<3.12"
-sdss-archon = ">=0.9.0b1"
-sdsstools = "^1.0.2"
+sdss-archon = "^0.9.0"
 
 [tool.poetry.dev-dependencies]
 ipython = ">=8.0.0"

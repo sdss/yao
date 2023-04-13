@@ -388,15 +388,8 @@ version = "2.1.12"
 description = "Hosted coverage reports for GitHub, Bitbucket and Gitlab"
 category = "dev"
 optional = false
-python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
-files = [
-    {file = "codecov-2.1.12-py2.py3-none-any.whl", hash = "sha256:585dc217dc3d8185198ceb402f85d5cb5dbfa0c5f350a5abcdf9e347776a5b47"},
-    {file = "codecov-2.1.12.tar.gz", hash = "sha256:a0da46bb5025426da895af90938def8ee12d37fcbcbbbc15b6dc64cf7ebc51c1"},
-]
-
-[package.dependencies]
-coverage = "*"
-requests = ">=2.7.9"
+python-versions = "*"
+files = []
 
 [[package]]
 name = "colorama"
@@ -1233,14 +1226,14 @@ files = [
 
 [[package]]
 name = "packaging"
-version = "23.0"
+version = "23.1"
 description = "Core utilities for Python packages"
 category = "main"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "packaging-23.0-py3-none-any.whl", hash = "sha256:714ac14496c3e68c99c29b00845f7a2b85f3bb6f1078fd9f72fd20f0570002b2"},
-    {file = "packaging-23.0.tar.gz", hash = "sha256:b6ad297f8907de0fa2fe1ccbd26fdaf387f5f47c7275fedf8cce89f99446cf97"},
+    {file = "packaging-23.1-py3-none-any.whl", hash = "sha256:994793af429502c4ea2ebf6bf664629d07c1a9fe974af92966e4b8d2df7edc61"},
+    {file = "packaging-23.1.tar.gz", hash = "sha256:a392980d2b6cffa644431898be54b0045151319d1e7ec34f0cfed48767dd334f"},
 ]
 
 [[package]]
@@ -1864,14 +1857,14 @@ toml = ["tomli (>=2.0,<3.0)"]
 
 [[package]]
 name = "sdss-archon"
-version = "0.9.0b1"
+version = "0.9.0"
 description = "A library and actor to communicate with an STA Archon controller."
 category = "main"
 optional = false
 python-versions = ">=3.8,<3.12"
 files = [
-    {file = "sdss_archon-0.9.0b1-py3-none-any.whl", hash = "sha256:0f255a922e20c06b3e68cc17c74f5bc2746f5d4c4fb0bf351aa92d73a1d526e6"},
-    {file = "sdss_archon-0.9.0b1.tar.gz", hash = "sha256:54180cf92a4c287c0beb38238fdbf7b7aebf56d9568eae473f83e2ccc0e26681"},
+    {file = "sdss_archon-0.9.0-py3-none-any.whl", hash = "sha256:bef376655ac641d0eaf829caf31e313cdc9239a131d97c8faaa6d3cd9bd40c2b"},
+    {file = "sdss_archon-0.9.0.tar.gz", hash = "sha256:16ad8938e65c9f17a75b8774624b22c9c672ff491ed5291d59a9d2715588d462"},
 ]
 
 [package.dependencies]
@@ -2529,4 +2522,4 @@ testing = ["big-O", "flake8 (<5)", "jaraco.functools", "jaraco.itertools", "more
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.9,<3.12"
-content-hash = "7bd38f8fb260cfaeb940e3caf588a6dbc0e3a74e4ef9ad87fea01f22b0a2b11c"
+content-hash = "696eac0e8fdb67618838a5b6accd1bbc268fd30ce7cd17b5af98e7239dcee40b"

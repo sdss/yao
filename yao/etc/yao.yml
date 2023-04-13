@@ -75,6 +75,10 @@ files:
   split: true
   template: 'sdR-{ccd}-{exposure_no:08d}.fit.gz'
 
+checksum:
+  write: true
+  mode: sha1
+
 archon:
   acf_file: BOSS_extra_purge_erase_v6.acf
 

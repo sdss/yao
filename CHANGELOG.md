@@ -10,6 +10,7 @@
 
 * Upgraded to use `sdss-archon>=0.9.0`.
 * The collecting of actor information (lamps, specMech, etc.) now happens during the exposure instead of after readout completes.
+* Create checksum files using `sha1sum`.
 
 
 ## 1.0.0 - October 19, 2022
