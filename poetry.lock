@@ -383,15 +383,6 @@ files = [
 click = "*"
 
 [[package]]
-name = "codecov"
-version = "2.1.12"
-description = "Hosted coverage reports for GitHub, Bitbucket and Gitlab"
-category = "dev"
-optional = false
-python-versions = "*"
-files = []
-
-[[package]]
 name = "colorama"
 version = "0.4.6"
 description = "Cross-platform colored terminal text."
@@ -2522,4 +2513,4 @@ testing = ["big-O", "flake8 (<5)", "jaraco.functools", "jaraco.itertools", "more
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.9,<3.12"
-content-hash = "696eac0e8fdb67618838a5b6accd1bbc268fd30ce7cd17b5af98e7239dcee40b"
+content-hash = "591fbc37b5302a17fb8f526a99a36fbdbb3c1337db785d8b4e9e27da8c6ea9bd"
