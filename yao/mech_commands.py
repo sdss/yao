@@ -120,7 +120,6 @@ async def status(
         write_func = command.info
 
     for this_stat in process_stats:
-
         if this_stat not in STATS:
             return command.fail(f"Invalid specMech status command {this_stat!r}.")
 

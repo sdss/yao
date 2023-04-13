@@ -41,7 +41,6 @@ class YaoActor(ArchonBaseActor, LegacyActor):
     parser = parser
 
     def __init__(self, *args, **kwargs):
-
         self._message_processor = self._process_message
 
         schema = self.merge_schemas(kwargs.pop("schema", None))

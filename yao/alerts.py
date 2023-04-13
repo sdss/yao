@@ -28,7 +28,6 @@ class AlertsBot:
     """Handles alerts for BOSS."""
 
     def __init__(self, actor: YaoActor):
-
         __ALERTS__: list[Type[BaseAlert]] = [
             R2CCDTemperatureAlert,
             R2LN2TemperatureAlert,
@@ -55,7 +54,6 @@ class BaseAlert(metaclass=abc.ABCMeta):
     keyword: str
 
     def __init__(self, actor: YaoActor, interval: float = 60.0):
-
         self.actor = actor
         self.interval = interval
 
@@ -142,7 +140,6 @@ class BaseAlert(metaclass=abc.ABCMeta):
 
 
 class TemperatureAlert(BaseAlert):
-
     controller: str
     ccd: str
     status_param: str
@@ -150,7 +147,6 @@ class TemperatureAlert(BaseAlert):
     max_increase: float
 
     def __init__(self, actor: YaoActor, interval: float = 60):
-
         # Rolling log of alert values; keeps only the last two measurements.
         self._values_log = deque(maxlen=2)
 

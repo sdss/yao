@@ -70,7 +70,6 @@ async def hartmann(
 
     try:
         for ss in side_list:
-
             other_side = "left" if ss == "right" else "right"
 
             command.debug(text=f"Taking {ss} Hartmann.")

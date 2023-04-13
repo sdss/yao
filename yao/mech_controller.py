@@ -86,7 +86,6 @@ class SpecMechReply:
     """A valid response to a command to the specMech."""
 
     def __init__(self, raw: bytes):
-
         self.command_id = 0
         self.raw = raw
 
@@ -234,7 +233,6 @@ class MechController:
     """
 
     def __init__(self, address: str, port: int = 23, log: SDSSLogger | None = None):
-
         self.reader: asyncio.StreamReader | None = None
         self.writer: asyncio.StreamWriter | None = None
 
@@ -580,7 +578,6 @@ class MechController:
         # Try twice, then fail.
 
         for ii in [1, 2]:
-
             await asyncio.sleep(config["timeouts"]["pneumatics"])
 
             reached = True
