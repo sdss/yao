@@ -1,5 +1,12 @@
 # Changelog
 
+## Next version
+
+### ✨ Improved
+
+* Use `BOSS_extra_purge_erase_v8.acf` which mimics the voltages used at APO for b2 (e2v). This seems to solve the "puddles" seen around the serial register and may improve the settle time after a power cycle.
+
+
 ## 1.1.0 - April 13, 2023
 
 ### 🚀 New
