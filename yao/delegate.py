@@ -41,6 +41,14 @@ class YaoDelegate(ExposureDelegate["YaoActor"]):
         super().__init__(actor)
 
         self.header_data = {}
+        self.shutter_failed: bool = False
+
+    def reset(self):
+        """Reset the delegate."""
+
+        self.shutter_failed = False
+
+        return super().reset()
 
     async def pre_expose(self, controllers: List[YaoController]):
         """Runs the e-purge routine before the exposure."""
@@ -62,14 +70,30 @@ class YaoDelegate(ExposureDelegate["YaoActor"]):
             return True
 
         try:
-            await self.command.actor.spec_mech.pneumatic_move(
-                "shutter",
-                open=open,
-                command=self.command,
+            # Time-out in five seconds.
+            await asyncio.wait_for(
+                self.command.actor.spec_mech.pneumatic_move(
+                    "shutter",
+                    open=open,
+                    command=self.command,
+                ),
+                5,
             )
+        except asyncio.TimeoutError:
+            self.command.error(
+                "Timed out trying to move the shutter. The SpecMech may be dead."
+            )
+            self.shutter_failed = True
         except SpecMechError as err:
             self.command.error(f"Failed moving shutter: {err}")
+            self.shutter_failed = True
+
+        if open is True:
+            # No point in exposing if we cannot open the shutter.
             return False
+
+        if self.shutter_failed:
+            self.command.warning("Reading out the exposure before failing.")
 
         return True
 
@@ -90,7 +114,15 @@ class YaoDelegate(ExposureDelegate["YaoActor"]):
         except asyncio.TimeoutError:
             self.command.warning("Timed out running exposure cotasks.")
 
-        return await super().readout(command, extra_header, delay_readout, write)
+        read_result = await super().readout(command, extra_header, delay_readout, write)
+
+        if self.shutter_failed:
+            self.command.warning(
+                "Readout complete but shutter failed to close. "
+                "There may be contamination in the frame."
+            )
+
+        return self.shutter_failed and read_result
 
     async def expose_cotasks(self):
         """Grab header information during exposure."""
