@@ -106,6 +106,13 @@ class YaoDelegate(ExposureDelegate["YaoActor"]):
     ):
         """Reads detectors."""
 
+        if self.shutter_failed:
+            self.command.warning(
+                "Readout frame out but shutter failed to close. "
+                "There may be contamination in the image."
+            )
+
+
         # Finish exposure tasks.
         try:
             if self._expose_cotasks:
@@ -115,12 +122,6 @@ class YaoDelegate(ExposureDelegate["YaoActor"]):
             self.command.warning("Timed out running exposure cotasks.")
 
         read_result = await super().readout(command, extra_header, delay_readout, write)
-
-        if self.shutter_failed:
-            self.command.warning(
-                "Readout complete but shutter failed to close. "
-                "There may be contamination in the frame."
-            )
 
         return self.shutter_failed and read_result
 
