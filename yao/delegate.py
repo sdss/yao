@@ -88,11 +88,12 @@ class YaoDelegate(ExposureDelegate["YaoActor"]):
             self.command.error(f"Failed moving shutter: {err}")
             self.shutter_failed = True
 
-        if open is True:
-            # No point in exposing if we cannot open the shutter.
-            return False
-
         if self.shutter_failed:
+            if open is True:
+                # No point in exposing if we cannot open the shutter.
+                return False
+
+            # Try to read out with shutter open.
             self.command.warning("Reading out the exposure before failing.")
 
         return True
