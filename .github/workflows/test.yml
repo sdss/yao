@@ -2,17 +2,11 @@ name: Test
 
 on:
   push:
-    branches: [main]
     paths-ignore:
       - 'docs/**'
-      - '**.md'
-      - '**.rst'
   pull_request:
-    branches: [main]
     paths-ignore:
       - 'docs/**'
-      - '**.md'
-      - '**.rst'
 
 jobs:
   build:
@@ -21,50 +15,38 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ['3.9', '3.10']
+        python-version: ['3.9', '3.10', '3.11']
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: Cache Setup
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: ~/.cache/pip
           key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
-          restore-keys: |
-            ${{ runner.os }}-pip-
 
       - name: Set up Python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: Install package
+      - name: Install dependencies
         run: |
-          pip install -U pip setuptools wheel
+          pip install --upgrade wheel pip setuptools
           pip install .
 
       - name: Lint with flake8
         run: |
           pip install flake8
-          flake8 . --count --show-source --statistics
+          flake8 yao --count --show-source --statistics
 
       - name: Lint with black
         run: |
           pip install black
-          black --check .
+          black --check yao
 
       - name: Lint with isort
         run: |
           pip install isort
           isort -c yao
-
-      # - name: Test with pytest
-      #   run: |
-      #     pip install pytest pytest-mock pytest-asyncio pytest-cov
-      #     pytest
-
-      # - name: Upload coverage to Codecov
-      #   uses: codecov/codecov-action@v3
-      #   with:
-      #     file: ./coverage.xml
