@@ -268,7 +268,7 @@ class MechController:
 
         return not self.writer.is_closing()
 
-    async def send_data(self, command: str, timeout: float = 1):
+    async def send_data(self, command: str, timeout: float | None = None):
         """Sends the given string to the specMech and then awaits a response.
 
         Currently when a command is sent the controller is locked and any
@@ -310,7 +310,7 @@ class MechController:
 
             async with self.lock:
                 self.writer.write(commandFinal.encode())
-                reply = await self.read_data()
+                reply = await asyncio.wait_for(self.read_data(), timeout)
 
         except ConnectionResetError:
             reply = SpecMechReply(b"")

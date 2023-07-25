@@ -32,7 +32,7 @@ if TYPE_CHECKING:
 __all__ = ["mech"]
 
 
-def check_controller(command: YaoCommand) -> bool:
+async def check_controller(command: YaoCommand) -> bool:
     """Performs sanity check in the controller.
 
     Outputs error messages if a problem is found. Return `False` if the controller
@@ -44,6 +44,12 @@ def check_controller(command: YaoCommand) -> bool:
 
     if not mech.is_connected():
         command.fail(error="specMech controller not connected.")
+        return False
+
+    try:
+        await mech.send_data("rt", timeout=3)
+    except asyncio.TimeoutError:
+        command.fail(error="specMech timed out replying.")
         return False
 
     return True
@@ -106,7 +112,7 @@ async def status(
 ):
     """Queries specMech for all status responses."""
 
-    if not check_controller(command):
+    if not (await check_controller(command)):
         return
 
     if stat is None:
@@ -257,7 +263,7 @@ async def move(
 
     """
 
-    if not check_controller(command):
+    if not (await check_controller(command)):
         return
 
     if absolute is True and motor is None:
@@ -373,7 +379,7 @@ async def move(
 async def ack(command: YaoCommand, controllers):
     """Acknowledges the specMech has rebooted and informs the user."""
 
-    if not check_controller(command):
+    if not (await check_controller(command)):
         return
 
     reply = await command.actor.spec_mech.send_data("!")
@@ -392,7 +398,7 @@ async def ack(command: YaoCommand, controllers):
 async def talk(command: YaoCommand, controllers, data: str):
     """Send data string directly as-is to the specMech."""
 
-    if not check_controller(command):
+    if not (await check_controller(command)):
         return
 
     reply = await command.actor.spec_mech.send_data(data)
@@ -410,7 +416,7 @@ async def talk(command: YaoCommand, controllers, data: str):
 async def set_time(command: YaoCommand, controller, time: str):
     """Set the clock time of the specMech."""
 
-    if not check_controller(command):
+    if not (await check_controller(command)):
         return
 
     dataTemp = f"st{time}"
@@ -432,7 +438,7 @@ async def set_time(command: YaoCommand, controller, time: str):
 async def openMech(command: YaoCommand, controller, mechanisms: tuple[str, ...]):
     """Opens left or right Hartmann doors, or the shutter."""
 
-    if not check_controller(command):
+    if not (await check_controller(command)):
         return
 
     jobs = []
@@ -464,7 +470,7 @@ async def openMech(command: YaoCommand, controller, mechanisms: tuple[str, ...])
 async def closeMech(command: YaoCommand, controller, mechanisms: tuple[str, ...]):
     """Closes left or right Hartmann doors, or the shutter."""
 
-    if not check_controller(command):
+    if not (await check_controller(command)):
         return
 
     jobs = []
@@ -490,7 +496,7 @@ async def closeMech(command: YaoCommand, controller, mechanisms: tuple[str, ...]
 async def reboot(command: YaoCommand, controller):
     """Reboots the controller. A reconnect and acknowledge are needed afterewards."""
 
-    if not check_controller(command):
+    if not (await check_controller(command)):
         return
 
     dataTemp = "R"
@@ -540,7 +546,7 @@ async def disconnect(command: YaoCommand, controller):
 async def fan(command: YaoCommand, controller, mode: str):
     """Turns the speMech fan on/off."""
 
-    if not check_controller(command):
+    if not (await check_controller(command)):
         return
 
     if mode == "on":
