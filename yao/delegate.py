@@ -113,7 +113,6 @@ class YaoDelegate(ExposureDelegate["YaoActor"]):
                 "There may be contamination in the image."
             )
 
-
         # Finish exposure tasks.
         try:
             if self._expose_cotasks:
@@ -124,7 +123,7 @@ class YaoDelegate(ExposureDelegate["YaoActor"]):
 
         read_result = await super().readout(command, extra_header, delay_readout, write)
 
-        return self.shutter_failed and read_result
+        return False if (self.shutter_failed or not read_result) else True
 
     async def expose_cotasks(self):
         """Grab header information during exposure."""
