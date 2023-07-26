@@ -109,7 +109,7 @@ class YaoDelegate(ExposureDelegate["YaoActor"]):
 
         if self.shutter_failed:
             self.command.warning(
-                "Readout frame out but shutter failed to close. "
+                "Frame was read out but shutter failed to close. "
                 "There may be contamination in the image."
             )
 
