@@ -1,5 +1,13 @@
 # Changelog
 
+## Next version
+
+### ✨ Improved
+
+* Check if shutter times out while opening/closing. If the shutter fails closing, the exposure is read anyway.
+* Check if specMech is responding on each `mech`` actor command.
+
+
 ## 1.2.0 - April 26, 2023
 
 ### ✨ Improved
