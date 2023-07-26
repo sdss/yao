@@ -101,7 +101,7 @@ class YaoDelegate(ExposureDelegate["YaoActor"]):
     async def readout(
         self,
         command: Command[YaoActor],
-        extra_header=...,
+        extra_header: dict[str, Any] = {},
         delay_readout: int = 0,
         write: bool = True,
     ):
