@@ -12,7 +12,6 @@ import asyncio
 import enum
 import re
 import warnings
-
 from typing import TYPE_CHECKING, Any
 
 from sdsstools.logger import SDSSLogger
@@ -20,7 +19,6 @@ from sdsstools.logger import SDSSLogger
 from yao import config
 
 from .exceptions import SpecMechError, YaoUserWarning
-
 
 if TYPE_CHECKING:
     from .actor import YaoCommand
@@ -578,7 +576,12 @@ class MechController:
         # Try twice, then fail.
 
         for ii in [1, 2]:
-            await asyncio.sleep(config["timeouts"]["pneumatics"])
+            timeout = config["timeouts"]["pneumatics"]
+            if ii == 2:
+                # Longer timeout if the first one failed.
+                timeout *= 3
+
+            await asyncio.sleep(timeout)
 
             reached = True
 

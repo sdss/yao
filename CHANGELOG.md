@@ -1,5 +1,12 @@
 # Changelog
 
+## Next version
+
+### 🔧 Fixed
+
+* Increase timeout for specMech pneumatic issues.
+
+
 ## 1.2.1 - July 26, 2023
 
 ### ✨ Improved
