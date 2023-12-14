@@ -132,7 +132,7 @@ class BaseAlert(metaclass=abc.ABCMeta):
 
             await asyncio.sleep(self.interval)
 
-    @abc.abstractclassmethod
+    @abc.abstractmethod
     async def check_alert(self):
         """Code that actually checks and raises an alert."""
 
