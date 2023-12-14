@@ -132,6 +132,7 @@ class YaoDelegate(ExposureDelegate["YaoActor"]):
 
         self.header_data = {}
 
+        # FPS Cards
         self.header_data["fps_cards"] = [
             (
                 "CONFID",
@@ -168,8 +169,10 @@ class YaoDelegate(ExposureDelegate["YaoActor"]):
             ),
         ]
 
+        # TCC Cards
         self.header_data["lcotcc_cards"] = get_lcotcc_cards(self.actor)
 
+        # Cherno/guider cards
         cherno_cards = []
         for idx, card in enumerate(["OFFRA", "OFFDEC", "OFFPA"]):
             default = get_keyword(
@@ -210,6 +213,7 @@ class YaoDelegate(ExposureDelegate["YaoActor"]):
         )
         self.header_data["cherno_cards"] = cherno_cards
 
+        # Lamps/screen cards
         lamp_cards = []
         for lamp in ["FF", "Ne", "HeAr"]:
             value = get_keyword(self.actor, "lcolamps", lamp, idx=0, default="?")
@@ -220,8 +224,20 @@ class YaoDelegate(ExposureDelegate["YaoActor"]):
             else:
                 card_value = "? ? ? ?"
             lamp_cards.append((lamp.upper(), card_value, f"{lamp} lamps 1:On 0:Off"))
+
+        screen_pos = float(get_keyword(self.actor, "lcotcc", "screenPos", 0, cnv=float))
+        lamp_cards.append(("FFSPOS", screen_pos, "FF screen position [deg]"))
+
+        tel_alt = float(get_keyword(self.actor, "lcotcc", "axePos", 1, cnv=float))
+        if numpy.abs(tel_alt - screen_pos) < 40:  # HACK
+            ffs_value = "1 1 1 1 1 1 1 1"
+        else:
+            ffs_value = "0 0 0 0 0 0 0 0"
+        lamp_cards.append(("FFS", ffs_value, "FFS 0:Closed 1:Open"))
+
         self.header_data["lamp_cards"] = lamp_cards
 
+        # SpecMech cards
         specmech_cards = []
 
         status_left = await self.actor.spec_mech.pneumatic_status("left")
@@ -398,15 +414,6 @@ class YaoDelegate(ExposureDelegate["YaoActor"]):
             # Lamps
             for card in self.header_data.get("lamp_cards", []):
                 header.append(card)
-
-            # Hacking FFS and FF for now.
-            if self.expose_data and self.expose_data.flavour == "flat":
-                header["FF"] = "1 1 1 1"
-            if self.expose_data and self.expose_data.flavour in ["flat", "arc"]:
-                ffs_value = "1 1 1 1 1 1 1 1"
-            else:
-                ffs_value = "0 0 0 0 0 0 0 0"
-            header.append(("FFS", ffs_value, "FFS 0:Closed 1:Open"))
 
             # specMech
             for card in self.header_data.get("specmech_cards", []):
