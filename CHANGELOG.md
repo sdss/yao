@@ -5,6 +5,7 @@
 ### ⚙️ Engineering
 
 * [#12](https://github.com/sdss/yao/pull/12) Deprecate 3.9, support 3.12. Lint using `ruff`. Update workflows.
+* [#13](https://github.com/sdss/yao/pull/13) Updates to FFS and lamps headers.
 
 ### 🔧 Fixed
 
