@@ -2,11 +2,17 @@ name: Test
 
 on:
   push:
+    branches: [main]
     paths-ignore:
       - 'docs/**'
+      - '**.md'
+      - '**.rst'
   pull_request:
+    branches: [main]
     paths-ignore:
       - 'docs/**'
+      - '**.md'
+      - '**.rst'
 
 jobs:
   build:
@@ -15,38 +21,28 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ['3.9', '3.10', '3.11']
+        python-version: ['3.10', '3.11', '3.12']
 
     steps:
-      - uses: actions/checkout@v3
-
-      - name: Cache Setup
-        uses: actions/cache@v3
-        with:
-          path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+      - uses: actions/checkout@v4
 
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
+          cache: 'pip'
 
       - name: Install dependencies
         run: |
           pip install --upgrade wheel pip setuptools
           pip install .
 
-      - name: Lint with flake8
+      - name: Lint with ruff
         run: |
-          pip install flake8
-          flake8 yao --count --show-source --statistics
+          pip install ruff
+          ruff check yao/ tests/
 
       - name: Lint with black
         run: |
           pip install black
-          black --check yao
-
-      - name: Lint with isort
-        run: |
-          pip install isort
-          isort -c yao
+          black --check yao/ tests/

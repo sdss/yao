@@ -2,6 +2,10 @@
 
 ## Next version
 
+### ⚙️ Engineering
+
+* [#12](https://github.com/sdss/yao/pull/12) Deprecate 3.9, support 3.12. Lint using `ruff`. Update workflows.
+
 ### 🔧 Fixed
 
 * Increase timeout for specMech pneumatic issues.
