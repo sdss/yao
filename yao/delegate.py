@@ -215,7 +215,7 @@ class YaoDelegate(ExposureDelegate["YaoActor"]):
 
         # Lamps/screen cards
         lamp_cards = []
-        for lamp in ["TCS_FF", "Ne", "HeAr"]:
+        for lamp in ["TCS_FF", "Ne", "HeAr", "FF"]:
             value = get_keyword(self.actor, "lcolamps", lamp, idx=0, default="?")
             if value == "ON":
                 card_value = "1 1 1 1"
@@ -224,7 +224,13 @@ class YaoDelegate(ExposureDelegate["YaoActor"]):
             else:
                 card_value = "? ? ? ?"
 
-            lamp_name = "FF" if lamp == "TCS_FF" else lamp.upper()
+            if lamp == "TCS_FF":
+                lamp_name = "FF"
+            elif lamp == "FF":
+                lamp_name = "M2FF"
+            else:
+                lamp_name = lamp.upper()
+
             lamp_cards.append((lamp_name, card_value, f"{lamp} lamps 1:On 0:Off"))
 
         screen_pos = float(get_keyword(self.actor, "lcotcc", "screenPos", 0, cnv=float))
