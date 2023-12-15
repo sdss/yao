@@ -236,12 +236,18 @@ class YaoDelegate(ExposureDelegate["YaoActor"]):
         screen_pos = float(get_keyword(self.actor, "lcotcc", "screenPos", 0, cnv=float))
         lamp_cards.append(("FFSPOS", screen_pos, "FF screen position [deg]"))
 
-        tel_alt = float(get_keyword(self.actor, "lcotcc", "axePos", 1, cnv=float))
-        if numpy.abs(tel_alt - screen_pos) < 40:  # HACK
+        # tel_alt = float(get_keyword(self.actor, "lcotcc", "axePos", 1, cnv=float))
+        # if numpy.abs(tel_alt - screen_pos) < 40:  # HACK
+        #     ffs_value = "1 1 1 1 1 1 1 1"
+        # else:
+        #     ffs_value = "0 0 0 0 0 0 0 0"
+        # lamp_cards.append(("FFS", ffs_value, "Flatfield Screen 1:closed 0:open"))
+
+        if self.expose_data and self.expose_data.flavour in ["flat", "arc"]:
             ffs_value = "1 1 1 1 1 1 1 1"
         else:
             ffs_value = "0 0 0 0 0 0 0 0"
-        lamp_cards.append(("FFS", ffs_value, "FFS 0:Closed 1:Open"))
+        lamp_cards.append(("FFS", ffs_value, "Flatfield Screen 1:closed 0:open"))
 
         self.header_data["lamp_cards"] = lamp_cards
 
