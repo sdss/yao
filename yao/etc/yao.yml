@@ -81,6 +81,7 @@ checksum:
 
 archon:
   acf_file: BOSS_extra_purge_erase_v8.acf
+  int_param: IntMS
 
 timeouts:
   controller_connect: 5

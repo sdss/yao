@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.3.0b2
+
+### 🔧 Fixed
+
+* [#14](https://github.com/sdss/yao/pull/14) Support `archon` 0.13.x.
+
+
 ## 1.3.0b1 - December 15, 2023
 
 ### ⚙️ Engineering
