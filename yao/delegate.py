@@ -384,6 +384,7 @@ class YaoDelegate(ExposureDelegate["YaoActor"]):
             else:
                 fdata["data"] = data
 
+        # Convert to astropy Header so it's easier to manipulate.
         header_ap = fits.Header()
         for key, value in header.items():
             if isinstance(value, (list, tuple)):
@@ -436,12 +437,11 @@ class YaoDelegate(ExposureDelegate["YaoActor"]):
         for card in self.header_data.get("specmech_cards", []):
             header_ap.append(card)
 
+        # Convert back to dict of lists.
         update_header = {}
         for card in header_ap.cards:
-            if isinstance(card.value, fits.card.Undefined):
-                update_header[card.keyword] = None
-            else:
-                update_header[card.keyword] = card.value
+            value = None if isinstance(card.value, fits.card.Undefined) else card.value
+            update_header[card.keyword] = [value, card.comment]
 
         fdata["header"] = update_header
 
