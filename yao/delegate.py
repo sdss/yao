@@ -350,6 +350,8 @@ class YaoDelegate(ExposureDelegate["YaoActor"]):
 
             OP = config["controllers"]["sp2"]["overscan_regions"][ccd]["pixels"]
 
+            print(LINES, PIXELS, OL, OL_END, OP, WIN_MODE)
+
             # Copy original data.
             rr = data.copy()
 
