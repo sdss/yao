@@ -1,5 +1,12 @@
 # Changelog
 
+## Next version
+
+### 🔧 Fixed
+
+* Fix temperature alerts not being raised if the controller was not available.
+
+
 ## 1.3.0 - December 22, 2023
 
 ### ✨ Improved

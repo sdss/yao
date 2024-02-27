@@ -126,9 +126,7 @@ class BaseAlert(metaclass=abc.ABCMeta):
             try:
                 await self.check_alert()
             except Exception as err:
-                self.actor.write(
-                    "w", {"error": f"Failed checking alert {self.name}: {err}"}
-                )
+                self.on_error(err)
 
             await asyncio.sleep(self.interval)
 
@@ -137,6 +135,17 @@ class BaseAlert(metaclass=abc.ABCMeta):
         """Code that actually checks and raises an alert."""
 
         pass
+
+    def on_error(self, error: Exception):
+        """Executed when an error is raised while checking the alert."""
+
+        msg = f"Failed checking alert {self.name!r}"
+        if str(error) != "":
+            msg += f": {error}"
+        else:
+            msg += "."
+
+        self.actor.write("w", {"error": msg})
 
 
 class TemperatureAlert(BaseAlert):
@@ -180,6 +189,13 @@ class TemperatureAlert(BaseAlert):
             self.value = True
         elif self._values_log[0] is False and self._values_log[1] is False:
             self.value = False
+
+    def on_error(self, error: Exception):
+        """Executed when an error is raised while checking the alert."""
+
+        super().on_error(error)
+        self._values_log.append(True)
+        self.value = True
 
 
 class R2LN2TemperatureAlert(TemperatureAlert):
