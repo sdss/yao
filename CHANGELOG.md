@@ -1,5 +1,12 @@
 # Changelog
 
+## Next version
+
+### ✨ Improved
+
+* Bump `archon` to 0.13.5.
+
+
 ## 1.3.1 - February 27, 2024
 
 ### ✨ Improved
