@@ -15,7 +15,7 @@ import warnings
 
 from typing import TYPE_CHECKING, Any
 
-from sdsstools.logger import SDSSLogger
+from sdsstools.logger import SDSSLogger, get_logger
 
 from yao import config
 
@@ -248,7 +248,7 @@ class MechController:
         self.reboot: bool = False
         self.command_number: int = 0
 
-        self.log = log or SDSSLogger("yao.boss-spech-mech-client")
+        self.log = log or get_logger("yao.boss-spech-mech-client")
         if log is None and log_path:
             self.log.start_file_logger(log_path)
 
@@ -261,8 +261,8 @@ class MechController:
         """Opens a connection with the given IP and port."""
 
         self.log.info(
-            f"Opening connection with {self.spechMechAddress} "
-            f"on port {self.specMechPort}"
+            f"Opening connection with specMech on {self.spechMechAddress} "
+            f"at port {self.specMechPort}"
         )
 
         loop = asyncio.get_running_loop()
