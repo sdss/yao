@@ -261,7 +261,7 @@ class MechController:
         """Opens a connection with the given IP and port."""
 
         self.log.info(
-            f"Opening connection with specMech on {self.spechMechAddress} "
+            f"Opening connection to specMech on {self.spechMechAddress} "
             f"at port {self.specMechPort}"
         )
 
