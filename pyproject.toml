@@ -41,7 +41,6 @@ pytest-sugar = ">=0.9.2"
 coverage = {version = ">=5.0", extras = ["toml"]}
 ipdb = ">=0.12.3"
 Sphinx = ">=3.0.0"
-black = ">=20.8b1"
 sphinx-click = ">=2.6.0"
 sphinx-jsonschema = ">=1.16.7"
 myst-parser = ">=0.14.0"
@@ -51,30 +50,26 @@ sphinx-autobuild = ">=2021.3.14"
 sphinx-copybutton = ">=0.3.3"
 ruff = ">=0.1.0"
 
-[tool.black]
-line-length = 88
-target-version = ['py312']
-fast = true
-
 [tool.ruff]
 line-length = 88
 target-version = 'py312'
+exclude = ["typings/"]
 
-[tool.ruff.lint]
+[ruff.lint]
 select = ["E", "F", "I"]
 unfixable = ["F841"]
 
 [tool.ruff.lint.per-file-ignores]
-"__init__.py" = ["F403", "E402", "F401"]
+"__init__.py" = ["F401", "F403", "E402"]
 
 [tool.ruff.lint.isort]
-known-first-party = ["yao"]
+known-first-party = ["hal"]
 lines-after-imports = 2
 section-order = ["future", "standard-library", "typing", "third-party", "sdss", "first-party", "local-folder"]
 
 [tool.ruff.lint.isort.sections]
 typing = ["typing"]
-sdss = ["sdsstools", "archon"]
+sdss = ["sdsstools", "archon", "clu"]
 
 [tool.pytest.ini_options]
 addopts = "--cov yao --cov-report xml --cov-report html --cov-report term"
