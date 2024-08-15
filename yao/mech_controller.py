@@ -229,17 +229,28 @@ class MechController:
         The port of the host of the mech server.
     log
         A logger to which to write.
+    log_path
+        If ``log=None`` and ``log_path`` is provided, the log is saved to this
+        location using a rotating file handler.
 
     """
 
-    def __init__(self, address: str, port: int = 23, log: SDSSLogger | None = None):
+    def __init__(
+        self,
+        address: str,
+        port: int = 23,
+        log: SDSSLogger | None = None,
+        log_path: str | None = None,
+    ):
         self.reader: asyncio.StreamReader | None = None
         self.writer: asyncio.StreamWriter | None = None
 
         self.reboot: bool = False
         self.command_number: int = 0
 
-        self.log = log or SDSSLogger("boss-spech-mech-client")
+        self.log = log or SDSSLogger("yao.boss-spech-mech-client")
+        if log is None and log_path:
+            self.log.start_file_logger(log_path)
 
         self.spechMechAddress = address
         self.specMechPort = port

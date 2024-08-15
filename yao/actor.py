@@ -14,12 +14,11 @@ import os
 import pathlib
 import warnings
 
-from clu import Command
-from clu.legacy import LegacyActor
-
 from archon import log as archon_log
 from archon.actor.actor import ArchonBaseActor
 from archon.actor.tools import get_schema
+from clu import Command
+from clu.legacy import LegacyActor
 
 from yao import __version__, config
 from yao.alerts import AlertsBot
@@ -57,9 +56,14 @@ class YaoActor(ArchonBaseActor, LegacyActor):
 
         # TODO: this assumes one single mech controller, not one per spectrograph,
         # but in practice for now that's fine.
+
+        log_path = self.log.log_filename
+        mech_log = pathlib.Path(log_path).parent / "spec-mech.log" if log_path else None
+
         self.spec_mech = MechController(
             self.config["specMech"]["address"],
             self.config["specMech"]["port"],
+            log_path=str(mech_log),
         )
 
         # Add actor log handlers to the archon library to also get that logging.
