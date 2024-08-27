@@ -2,6 +2,11 @@
 
 ## Next version
 
+### ✨ Improved
+
+* Log specMech commands and replies to disk.
+* Set specMech time periodically.
+
 ### ⚙️ Engineering
 
 * Format code using ruff and update workflows.
