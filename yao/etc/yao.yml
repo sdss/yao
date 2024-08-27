@@ -49,6 +49,7 @@ header:
 specMech:
   address: 192.168.1.3
   port: 23
+  write_log: true
   motors:
     minP: 85000
     maxP: 800000

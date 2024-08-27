@@ -60,7 +60,11 @@ class YaoActor(ArchonBaseActor, LegacyActor):
         # but in practice for now that's fine.
 
         log_path = self.log.log_filename
-        mech_log = pathlib.Path(log_path).parent / "spec-mech.log" if log_path else None
+        write_mech_log = self.config["specMech"].get("write_log", False)
+        if log_path and write_mech_log:
+            mech_log = pathlib.Path(log_path).parent / "spec-mech.log"
+        else:
+            mech_log = None
 
         self.spec_mech = MechController(
             self.config["specMech"]["address"],
