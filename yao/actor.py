@@ -9,6 +9,7 @@
 from __future__ import annotations
 
 import asyncio
+import datetime
 import json
 import os
 import pathlib
@@ -19,6 +20,7 @@ from archon.actor.actor import ArchonBaseActor
 from archon.actor.tools import get_schema
 from clu import Command
 from clu.legacy import LegacyActor
+from sdsstools.utils import cancel_task
 
 from yao import __version__, config
 from yao.alerts import AlertsBot
@@ -65,6 +67,7 @@ class YaoActor(ArchonBaseActor, LegacyActor):
             self.config["specMech"]["port"],
             log_path=str(mech_log),
         )
+        self._mech_set_time_task: asyncio.Task | None = None
 
         # Add actor log handlers to the archon library to also get that logging.
         archon_log.addHandler(self.log.sh)
@@ -90,10 +93,28 @@ class YaoActor(ArchonBaseActor, LegacyActor):
 
         new_self = await super().start()
 
+        if self.spec_mech.is_connected:
+            self._mech_set_time_task = asyncio.create_task(self._set_mech_time())
+
         if self.alerts_bot is None:
             self.alerts_bot = AlertsBot(self)
 
         return new_self
+
+    async def stop(self):
+        """Stops the actor and disconnects the specMech client."""
+
+        if self._mech_set_time_task:
+            await cancel_task(self._mech_set_time_task)
+
+        if self.alerts_bot:
+            self.alerts_bot.stop()
+
+        if self.spec_mech.writer:
+            self.spec_mech.writer.close()
+            await self.spec_mech.writer.wait_closed()
+
+        return await super().stop()
 
     def merge_schemas(self, yao_schema_path: str | None = None):
         """Merge default schema with the one from yao."""
@@ -154,6 +175,20 @@ class YaoActor(ArchonBaseActor, LegacyActor):
         """Creates an actor from the internal package configuration."""
 
         return super().from_config(config if file is None else file)
+
+    async def _set_mech_time(self):
+        """Sets the time on the mech controller."""
+
+        while True:
+            now = datetime.datetime.now(datetime.timezone.utc)
+            iso_string = now.isoformat().split(".")[0]
+            cmd = await self.send_command("yao", f"mech set-time {iso_string}")
+            if cmd.status.did_fail:
+                self.write("e", error="Failed setting time on mech controller.")
+                await asyncio.sleep(60)
+                continue
+
+            await asyncio.sleep(86400)
 
 
 YaoCommand = Command[YaoActor]
