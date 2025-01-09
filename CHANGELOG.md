@@ -2,6 +2,10 @@
 
 ## Next version
 
+### 🏷️ Changed
+
+* Set `FANDISABLE=1` to disable the Archon fan.
+
 ### ⚙️ Engineering
 
 * Format code using ruff and update workflows.
