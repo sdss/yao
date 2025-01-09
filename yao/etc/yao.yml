@@ -83,6 +83,9 @@ checksum:
 archon:
   acf_file: BOSS_extra_purge_erase_v8.acf
   int_param: IntMS
+  acf_overrides:
+    sp2:
+      FANDISABLE: 1
 
 timeouts:
   controller_connect: 5

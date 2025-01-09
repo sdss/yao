@@ -1,5 +1,12 @@
 # Changelog
 
+## Next version
+
+### 🏷️ Changed
+
+* Disable the Archon fan.
+
+
 ## 1.3.3 - August 27, 2024
 
 ### ✨ Improved
