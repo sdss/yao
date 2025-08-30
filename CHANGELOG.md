@@ -2,6 +2,10 @@
 
 ## Next version
 
+### ✨ Improved
+
+* Updated `archon` to `0.15.5`. This version solves the pixel shift issues when fetching the buffer.
+
 ### 🏷️ Changed
 
 * Disable the Archon fan.
