@@ -1,5 +1,12 @@
 # Changelog
 
+## Next release
+
+### 🔧 Fixed
+
+* Copy the data array, which may not own its data, before post-processing.
+
+
 ## 1.3.4 - August 29, 2025
 
 ### ✨ Improved

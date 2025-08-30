@@ -328,7 +328,7 @@ class YaoDelegate(ExposureDelegate["YaoActor"]):
 
         WIN_MODE = self.expose_data.window_mode if self.expose_data else None
 
-        data = fdata["data"]
+        data = fdata["data"].copy()
         header = fdata["header"]
         assert isinstance(data, numpy.ndarray)
 
