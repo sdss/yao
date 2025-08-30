@@ -603,8 +603,7 @@ class MechController:
                 check_reply(status)
             except SpecMechError as err:
                 raise SpecMechError(
-                    "Failed checking the status of the "
-                    f"pneumatics after a move: {err}"
+                    f"Failed checking the status of the pneumatics after a move: {err}"
                 )
 
             if mechanism == "shutter":

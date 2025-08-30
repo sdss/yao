@@ -15,9 +15,9 @@ from typing import TYPE_CHECKING, Any, List
 import numpy
 from astropy.io import fits
 from astropy.time import Time
-from clu.legacy.types.pvt import PVT
 
 from archon.actor.delegate import ExposureDelegate, FetchDataDict
+from clu.legacy.types.pvt import PVT
 from sdsstools.time import get_sjd
 
 from .exceptions import SpecMechError

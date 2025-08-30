@@ -1,61 +1,55 @@
-[tool.poetry]
+[project]
 name = "sdss-yao"
 version = "1.3.4a0"
 description = "BOSS spectrograph actor that uses an STA Archon controller"
-authors = ["José Sánchez-Gallego <gallegoj@uw.edu>", "Aidan Gray <aidan.gray@idg.jhu.edu>"]
-license = "BSD-3-Clause"
+authors = [
+    { name = "José Sánchez-Gallego", email = "gallegoj@uw.edu" },
+    { name = "Aidan Gray", email = "aidan.gray@idg.jhu.edu" }
+]
+license = { text = "BSD-3-Clause" }
 readme = "README.md"
-homepage = "https://github.com/sdss/yao"
-repository = "https://github.com/sdss/yao"
-documentation = "https://sdss-yao.readthedocs.org"
-keywords = ["astronomy", "software"]
-classifiers = [
-    "Intended Audience :: Science/Research",
-    "Natural Language :: English",
-    "Operating System :: OS Independent",
-	"Programming Language :: Python :: 3.6",
-	"Programming Language :: Python :: 3.7",
-	"Programming Language :: Python :: 3.8",
-    "Topic :: Documentation :: Sphinx",
-    "Topic :: Software Development :: Libraries :: Python Modules"
-]
-packages = [
-    { include = "yao" }
-]
-include = ["yao/etc/*"]
 
-[tool.poetry.scripts]
+requires-python = ">=3.10,<4"
+
+dependencies = [
+    "sdss-archon>=0.15.5"
+]
+
+[project.urls]
+Homepage = "https://github.com/sdss/yao"
+Repository = "https://github.com/sdss/yao"
+Documentation = "https://sdss-yao.readthedocs.org"
+
+[project.scripts]
 yao = "yao.__main__:yao"
 
-[tool.poetry.dependencies]
-python = ">=3.10,<3.13"
-sdss-archon = "^0.13.5"
-
-[tool.poetry.dev-dependencies]
-ipython = ">=8.0.0"
-pytest = ">=5.2.2"
-pytest-asyncio = ">=0.10.0"
-pytest-cov = ">=2.8.1"
-pytest-mock = ">=1.13.0"
-pytest-sugar = ">=0.9.2"
-coverage = {version = ">=5.0", extras = ["toml"]}
-ipdb = ">=0.12.3"
-Sphinx = ">=3.0.0"
-sphinx-click = ">=2.6.0"
-sphinx-jsonschema = ">=1.16.7"
-myst-parser = ">=0.14.0"
-furo = ">=2021.6.18-beta.36"
-nox = ">=2021.6.12"
-sphinx-autobuild = ">=2021.3.14"
-sphinx-copybutton = ">=0.3.3"
-ruff = ">=0.1.0"
+[dependency-groups]
+dev = [
+    "ipython>=8.0.0",
+    "pytest>=5.2.2",
+    "pytest-asyncio>=0.10.0",
+    "pytest-cov>=2.8.1",
+    "pytest-mock>=1.13.0",
+    "pytest-sugar>=0.9.2",
+    "coverage[toml]>=5.0",
+    "ipdb>=0.12.3",
+    "Sphinx>=3.0.0",
+    "sphinx-click>=2.6.0",
+    "sphinx-jsonschema>=1.16.7",
+    "myst-parser>=0.14.0",
+    "furo>=2021.6.18-beta.36",
+    "nox>=2021.6.12",
+    "sphinx-autobuild>=2021.3.14",
+    "sphinx-copybutton>=0.3.3",
+    "ruff>=0.1.0"
+]
 
 [tool.ruff]
 line-length = 88
 target-version = 'py312'
 exclude = ["typings/"]
 
-[ruff.lint]
+[tool.ruff.lint]
 select = ["E", "F", "I"]
 unfixable = ["F841"]
 
@@ -90,5 +84,11 @@ exclude_lines = [
 ]
 
 [build-system]
-requires = ["poetry-core>=1.1.0b2"]
-build-backend = "poetry.core.masonry.api"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.sdist]
+only-include = ["yao"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["yao"]

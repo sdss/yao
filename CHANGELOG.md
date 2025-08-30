@@ -6,6 +6,10 @@
 
 * Disable the Archon fan.
 
+### ⚙️ Engineering
+
+* Use `uv` for package management.
+
 
 ## 1.3.3 - August 27, 2024
 

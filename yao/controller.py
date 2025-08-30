@@ -78,7 +78,7 @@ class YaoController(ArchonController):
         notifier(purge_msg)
 
         for ii in range(n_cycles):
-            notifier(f"Cycle {ii+1} of {n_cycles}.")
+            notifier(f"Cycle {ii + 1} of {n_cycles}.")
             await self.purge(fast=fast)
 
         await self.set_param("DoPurge", 0)
