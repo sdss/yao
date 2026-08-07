@@ -13,8 +13,6 @@
 
 import os
 
-from pkg_resources import parse_version
-
 
 try:
     from yao import __version__
@@ -82,7 +80,7 @@ author = "José Sánchez-Gallego"
 # built documents.
 
 # The short X.Y version.
-version = parse_version(__version__).base_version
+version = __version__
 # The full version, including alpha/beta/rc tags.
 release = __version__
 
