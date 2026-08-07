@@ -12,7 +12,9 @@ readme = "README.md"
 requires-python = ">=3.10,<4"
 
 dependencies = [
-    "sdss-archon>=0.15.5"
+    "sdss-archon>=0.15.5",
+    "sdsstools>=1.9.8",
+    "numpy<2.5.0"
 ]
 
 [project.urls]
@@ -41,7 +43,8 @@ dev = [
     "nox>=2021.6.12",
     "sphinx-autobuild>=2021.3.14",
     "sphinx-copybutton>=0.3.3",
-    "ruff>=0.1.0"
+    "ruff>=0.1.0",
+    "ty>=0.0.69",
 ]
 
 [tool.ruff]

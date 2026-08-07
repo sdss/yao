@@ -86,6 +86,8 @@ archon:
   acf_overrides:
     sp2:
       FANDISABLE: 1
+      'MOD2\HEATERATARGET': -120.0
+      'MOD11\HEATERATARGET': -98.0
 
 timeouts:
   controller_connect: 5
