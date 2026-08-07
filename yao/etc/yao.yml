@@ -112,5 +112,5 @@ alerts:
     b2_ccd_status_param: mod11/tempa
     r2_ln2_status_param: mod2/tempb
     b2_ln2_status_param: mod11/tempb
-    r2_setpoint_param: MOD2\HEATERATARGET
-    b2_setpoint_param: MOD11\HEATERATARGET
+    r2_setpoint_param: mod2/heateratarget
+    b2_setpoint_param: mod11/heateratarget

@@ -11,6 +11,7 @@ from __future__ import annotations
 import abc
 import asyncio
 import time
+import warnings
 from collections import deque
 
 from typing import TYPE_CHECKING, Type
@@ -173,9 +174,14 @@ class TemperatureAlert(BaseAlert):
         if isinstance(self.setpoint_param, str):
             if not controller.acf_config:
                 raise ValueError("Controller has no configuration loaded.")
-            setpoint = controller.acf_config["CONFIG"].getfloat(self.setpoint_param)
+            setpoint_config = self.setpoint_param.replace("/", "\\").upper()
+            setpoint = controller.acf_config["CONFIG"].getfloat(setpoint_config)
         else:
             setpoint = self.setpoint_param
+
+        if not isinstance(setpoint, (int, float)):
+            warnings.warn(f"Invalid setpoint value {setpoint!r}.")
+            return
 
         if temperature > setpoint + self.max_increase:
             self._values_log.append(True)
