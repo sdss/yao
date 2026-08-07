@@ -1,5 +1,12 @@
 # Changelog
 
+## Next release
+
+### 🚀 New
+
+* [#27](https://github.com/sdss/yao/pull/27) Add an `override` command set to allow setting the CCD temperature and enable/disable the Archon fan.
+
+
 ## 1.3.5 - August 30, 2025
 
 ### 🔧 Fixed
