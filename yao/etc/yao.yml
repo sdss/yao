@@ -51,7 +51,7 @@ specMech:
   port: 23
   write_log: true
   motors:
-    minP: 85000
+    minP: 80000
     maxP: 800000
     min_microns: 300
     max_microns: 2800
