@@ -1,5 +1,12 @@
 # Changelog
 
+## Next release
+
+### 🔧 Fixed
+
+* Fixed report of fan status in `specMech` report command.
+
+
 ## 1.4.0 - August 7, 2026
 
 ### 🚀 New

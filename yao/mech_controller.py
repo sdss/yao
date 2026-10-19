@@ -546,7 +546,7 @@ class MechController:
                 blue_dewar_thermistor_status,
             )
 
-        elif "specmech":
+        elif values[0] == "SPM":
             fan = "on" if int(values[2]) else "off"
             volts = float(values[4])
             return (fan, volts)
