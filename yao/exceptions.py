@@ -12,7 +12,7 @@ class YaoError(Exception):
 
     def __init__(self, message=None):
         message = "There has been an error" if not message else message
-        super(YaoError, self).__init__(message)
+        super().__init__(message)
 
 
 class YaoNotImplemented(YaoError):
@@ -20,7 +20,7 @@ class YaoNotImplemented(YaoError):
 
     def __init__(self, message=None):
         message = "This feature is not implemented yet." if not message else message
-        super(YaoNotImplemented, self).__init__(message)
+        super().__init__(message)
 
 
 class SpecMechError(YaoError):
@@ -30,16 +30,10 @@ class SpecMechError(YaoError):
 class YaoMissingDependency(YaoError):
     """A custom exception for missing dependencies."""
 
-    pass
-
 
 class YaoWarning(Warning):
     """Base warning for Yao."""
 
-    pass
-
 
 class YaoUserWarning(UserWarning, YaoWarning):
     """The primary warning class."""
-
-    pass

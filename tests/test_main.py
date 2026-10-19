@@ -8,4 +8,6 @@
 
 
 def test_yao():
-    assert True
+    from yao import __version__
+
+    assert __version__ is not None

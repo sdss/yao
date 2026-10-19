@@ -81,8 +81,6 @@ def parse_reply(command: YaoCommand, reply: SpecMechReply, fail: bool = True):
 def mech(*args):
     """Interface to the specMech controller."""
 
-    pass
-
 
 # Values to output if a stat fails.
 FAILED_STAT_REPLIES = {

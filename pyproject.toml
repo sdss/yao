@@ -49,11 +49,11 @@ dev = [
 
 [tool.ruff]
 line-length = 88
-target-version = 'py312'
+target-version = 'py310'
 exclude = ["typings/"]
 
 [tool.ruff.lint]
-select = ["E", "F", "I"]
+ignore = ["UP009", "EXE001", "BLE001"]
 unfixable = ["F841"]
 
 [tool.ruff.lint.per-file-ignores]
@@ -73,7 +73,6 @@ addopts = "--cov yao --cov-report xml --cov-report html --cov-report term"
 
 [tool.coverage.run]
 branch = true
-include = ["yao/*"]
 omit = [
     "*/__init__.py",
     "yao/__main__.py"

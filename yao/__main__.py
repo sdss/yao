@@ -62,7 +62,7 @@ async def actor(ctx: click.Context):
         yao_actor.log.sh.setLevel(logging.DEBUG)
 
     await yao_actor.start()
-    await yao_actor.run_forever()  # type: ignore
+    await yao_actor.run_forever()
 
 
 if __name__ == "__main__":

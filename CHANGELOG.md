@@ -6,6 +6,10 @@
 
 * Fixed report of fan status in `specMech` report command.
 
+### ⚙️ Engineering
+
+* Update `ruff` rules and reformat files.
+
 
 ## 1.4.0 - August 7, 2026
 

@@ -26,7 +26,7 @@ if TYPE_CHECKING:
     from .actor import YaoCommand
 
 
-__all__ = ["MechController", "ReplyCode", "SpecMechReply", "STATS", "check_reply"]
+__all__ = ["STATS", "MechController", "ReplyCode", "SpecMechReply", "check_reply"]
 
 
 #: Stat names accepted by the report command.
@@ -410,7 +410,7 @@ class MechController:
                 mtrSpeed = int(values[5])
                 mtrCurrent = int(values[7])
                 mtrDirection = values[9]
-                mtrLimit = True if values[11] == "Y" else False
+                mtrLimit = values[11] == "Y"
                 return (mtr, mtrPosition, mtrSpeed, mtrCurrent, mtrDirection, mtrLimit)
             elif stat == "motors":
                 # This is the only case in which we have multiple replies.

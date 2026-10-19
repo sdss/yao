@@ -9,8 +9,6 @@
 # All configuration values have a default; values that are commented out
 # serve to show the default.
 
-# type: ignore
-
 import os
 
 
@@ -200,8 +198,8 @@ latex_elements = {
 latex_documents = [
     (
         master_doc,
-        "{0}.tex".format(project),
-        "{0} Documentation".format(project),
+        f"{project}.tex",
+        f"{project} Documentation",
         author,
         "manual",
     ),
@@ -211,7 +209,7 @@ latex_documents = [
 
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
-man_pages = [(master_doc, "yao", "{0} Documentation".format(project), [author], 1)]
+man_pages = [(master_doc, "yao", f"{project} Documentation", [author], 1)]
 
 # -- Options for Texinfo output -------------------------------------------
 
@@ -222,7 +220,7 @@ texinfo_documents = [
     (
         master_doc,
         project,
-        "{0} Documentation".format(project),
+        f"{project} Documentation",
         author,
         project,
         "One line description of project.",

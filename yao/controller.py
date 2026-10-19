@@ -9,14 +9,19 @@
 from __future__ import annotations
 
 import asyncio
-
-from typing import Callable
+from collections.abc import Callable
 
 from archon import log
 from archon.controller import ArchonController, ControllerStatus
 
 
 __all__ = ["YaoController"]
+
+
+def noop(*args, **kwargs) -> None:
+    """A no-op function."""
+
+    return
 
 
 class YaoController(ArchonController):
@@ -66,7 +71,7 @@ class YaoController(ArchonController):
         """
 
         if notifier is None:
-            notifier = lambda text: None  # noqa
+            notifier = noop
 
         if erase:
             notifier("Erasing chip.")

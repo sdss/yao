@@ -14,7 +14,7 @@ import time
 import warnings
 from collections import deque
 
-from typing import TYPE_CHECKING, Type
+from typing import TYPE_CHECKING
 
 from yao import config
 
@@ -29,7 +29,7 @@ class AlertsBot:
     """Handles alerts for BOSS."""
 
     def __init__(self, actor: YaoActor):
-        __ALERTS__: list[Type[BaseAlert]] = [
+        __ALERTS__: list[type[BaseAlert]] = [
             R2CCDTemperatureAlert,
             R2LN2TemperatureAlert,
             B2CCDTemperatureAlert,
@@ -134,8 +134,6 @@ class BaseAlert(metaclass=abc.ABCMeta):
     @abc.abstractmethod
     async def check_alert(self):
         """Code that actually checks and raises an alert."""
-
-        pass
 
     def on_error(self, error: Exception):
         """Executed when an error is raised while checking the alert."""
@@ -266,8 +264,6 @@ class YaoHeartbeat(BaseAlert):
 
     def _notify(self, *args, **kwargs):
         """Disable normal alert notifications for this alert."""
-
-        pass
 
     async def check_alert(self):
         """Reports if the actor is alive."""

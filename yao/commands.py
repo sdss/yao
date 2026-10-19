@@ -26,7 +26,7 @@ if TYPE_CHECKING:
     from .controller import YaoController
 
 
-__all__ = ["hartmann", "erase", "cleanup", "purge", "override"]
+__all__ = ["cleanup", "erase", "hartmann", "override", "purge"]
 
 
 async def run_subcmd(command: YaoCommand, command_string: str):
@@ -82,7 +82,7 @@ async def hartmann(
             status_side = await spec_mech.pneumatic_status(ss)
             if status_side == "transitioning":
                 raise SpecMechError(f"Hartmann {ss} door is transitioning.")
-            elif status_side == "open":
+            elif status_side == "open":  # noqa: SIM102
                 if not (await run_subcmd(command, f"mech close {ss}")):
                     return
 
@@ -90,7 +90,7 @@ async def hartmann(
             status_other_side = await spec_mech.pneumatic_status(other_side)
             if status_other_side == "transitioning":
                 raise SpecMechError(f"Hartmann {other_side} door is transitioning.")
-            elif status_other_side == "closed":
+            elif status_other_side == "closed":  # noqa: SIM102
                 if not (await run_subcmd(command, f"mech open {other_side}")):
                     return
 
@@ -159,8 +159,6 @@ async def cleanup(
 def purge(*args):
     """Sets the purge routine on/off."""
 
-    pass
-
 
 @purge.command()
 async def on(command: YaoCommand, controllers: dict[str, YaoController]):
@@ -185,8 +183,6 @@ async def off(command: YaoCommand, controllers: dict[str, YaoController]):
 @parser.group()
 def override(*args):
     """Sets override configuration parameters."""
-
-    pass
 
 
 @override.command()
@@ -357,14 +353,10 @@ def _save_configuration(command: YaoCommand):
         return
 
     if isinstance(actor.config, Configuration):
-        config_dict = actor.config.to_dict()
+        config_dict = dict(actor.config)
     else:
         config_dict = dict(actor.config)
 
     command.info(f"Saving configuration to {actor.config_file_path!s}.")
-    yaml.safe_dump(
-        config_dict,
-        open(actor.config_file_path, "w"),
-        sort_keys=False,
-        indent=2,
-    )
+    with open(actor.config_file_path, "w") as ff:
+        yaml.safe_dump(config_dict, ff, sort_keys=False, indent=2)

@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import asyncio
 
-from typing import TYPE_CHECKING, Any, List
+from typing import TYPE_CHECKING, Any
 
 import numpy
 from astropy.io import fits
@@ -49,7 +49,7 @@ class YaoDelegate(ExposureDelegate["YaoActor"]):
 
         return super().reset()
 
-    async def pre_expose(self, controllers: List[YaoController]):
+    async def pre_expose(self, controllers: list[YaoController]):
         """Runs the e-purge routine before the exposure."""
 
         self.command.info("E-purging and flushing.")
@@ -100,11 +100,13 @@ class YaoDelegate(ExposureDelegate["YaoActor"]):
     async def readout(
         self,
         command: Command[YaoActor],
-        extra_header: dict[str, Any] = {},
+        extra_header: dict[str, Any] | None = None,
         delay_readout: int = 0,
         write: bool = True,
     ):
         """Reads detectors."""
+
+        extra_header = extra_header or {}
 
         if self.shutter_failed:
             self.command.warning(
@@ -122,7 +124,7 @@ class YaoDelegate(ExposureDelegate["YaoActor"]):
 
         read_result = await super().readout(command, extra_header, delay_readout, write)
 
-        return False if (self.shutter_failed or not read_result) else True
+        return not (self.shutter_failed or not read_result)
 
     async def expose_cotasks(self):
         """Grab header information during exposure."""

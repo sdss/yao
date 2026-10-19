@@ -31,7 +31,7 @@ from yao.exceptions import YaoUserWarning
 from yao.mech_controller import MechController
 
 
-class YaoActor(ArchonBaseActor, LegacyActor):
+class YaoActor(ArchonBaseActor, LegacyActor):  # type: ignore
     """Yao actor."""
 
     is_legacy = True
@@ -39,7 +39,7 @@ class YaoActor(ArchonBaseActor, LegacyActor):
     DELEGATE_CLASS = YaoDelegate
     CONTROLLER_CLASS = YaoController
 
-    parser = parser
+    parser = parser  # type: ignore
 
     def __init__(self, *args, **kwargs):
         self._message_processor = self._process_message
@@ -79,12 +79,12 @@ class YaoActor(ArchonBaseActor, LegacyActor):
             archon_log.addHandler(self.log.fh)
             self.log.fh.setLevel(10)
 
-    async def start(self):
+    async def start(self, *args, **kwargs):
         """Starts the actor and connects the specMech client."""
 
         try:
             await self.spec_mech.start()
-        except asyncio.TimeoutError:
+        except TimeoutError:
             warnings.warn(
                 "Failed connecting to mech controller: timed out.",
                 YaoUserWarning,
@@ -95,9 +95,9 @@ class YaoActor(ArchonBaseActor, LegacyActor):
                 YaoUserWarning,
             )
 
-        new_self = await super().start()
+        new_self = await super().start(*args, **kwargs)
 
-        if self.spec_mech.is_connected:
+        if self.spec_mech.is_connected():
             self._mech_set_time_task = asyncio.create_task(self._set_mech_time())
 
         if self.alerts_bot is None:
@@ -130,7 +130,8 @@ class YaoActor(ArchonBaseActor, LegacyActor):
             if not os.path.isabs(yao_schema_path):
                 yao_schema_path = os.path.join(str(root_path), yao_schema_path)
 
-            yao_schema = json.loads(open(yao_schema_path, "r").read())
+            with open(yao_schema_path, "r") as ff:
+                yao_schema = json.loads(ff.read())
 
             schema["definitions"].update(yao_schema.get("definitions", {}))
             schema["properties"].update(yao_schema.get("properties", {}))
